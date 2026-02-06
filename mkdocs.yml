@@ -72,4 +72,11 @@ plugins:
 
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
+  - Architecture: architecture.md
+  - Channels:
+    - Overview: channels/index.md
+    - Telegram: channels/telegram.md
+    - Discord: channels/discord.md
+  - Skills: skills.md
   - API Reference: api.md
