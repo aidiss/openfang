@@ -86,6 +86,21 @@ uv run openfang chat
 
 </div>
 
+## CLI Commands
+
+```bash
+openfang --help        # Show all commands
+openfang config        # Show current configuration
+openfang skills        # List available skills
+openfang health        # Check if gateway is running
+openfang status        # Full status check
+
+openfang gateway       # Start the gateway server
+openfang chat          # Interactive terminal chat
+openfang run "prompt"  # Single prompt, get response
+openfang telegram      # Run Telegram bot standalone
+```
+
 ## Troubleshooting
 
 ### "No API key found"

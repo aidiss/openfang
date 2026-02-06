@@ -193,6 +193,130 @@ def gateway(host: str | None, port: int | None, heartbeat: bool | None, use_logf
     run_async(_run())
 
 
+@cli.command()
+@click.option("--url", default="http://localhost:18789", help="Gateway URL")
+def health(url: str):
+    """Check gateway health."""
+    import httpx
+
+    try:
+        resp = httpx.get(f"{url}/health", timeout=5)
+        data = resp.json()
+        status = data.get("status", "unknown")
+        if status == "healthy":
+            click.secho(f"✓ Gateway healthy at {url}", fg="green")
+            if "uptime" in data:
+                click.echo(f"  Uptime: {data['uptime']}")
+            if "channels" in data:
+                click.echo(f"  Channels: {data['channels']}")
+        else:
+            click.secho(f"✗ Gateway unhealthy: {status}", fg="red")
+    except httpx.ConnectError:
+        click.secho(f"✗ Cannot connect to {url}", fg="red")
+        click.echo("  Is the gateway running? Try: openfang gateway")
+        raise SystemExit(1)
+    except Exception as e:
+        click.secho(f"✗ Error: {e}", fg="red")
+        raise SystemExit(1)
+
+
+@cli.command()
+@click.option("--url", default="http://localhost:18789", help="Gateway URL")
+def status(url: str):
+    """Show gateway status and configuration."""
+    import httpx
+
+    click.echo("OpenFang Status")
+    click.echo("=" * 40)
+
+    # Check gateway
+    try:
+        resp = httpx.get(f"{url}/health", timeout=5)
+        data = resp.json()
+        click.secho(f"Gateway: running at {url}", fg="green")
+    except httpx.ConnectError:
+        click.secho("Gateway: not running", fg="yellow")
+        click.echo("\nStart with: openfang gateway")
+        return
+
+    # Show settings
+    click.echo(f"\nSettings:")
+    click.echo(f"  Host: {settings.host}")
+    click.echo(f"  Port: {settings.port}")
+    click.echo(f"  Telegram: {'configured' if settings.telegram_bot_token else 'not configured'}")
+    click.echo(f"  Discord: {'configured' if settings.discord_bot_token else 'not configured'}")
+
+    # Show skills
+    try:
+        resp = httpx.get(f"{url}/skills", timeout=5)
+        skills = resp.json()
+        eligible = [s for s in skills if s.get("eligible")]
+        click.echo(f"\nSkills: {len(eligible)} available")
+        for skill in eligible[:5]:
+            click.echo(f"  • {skill.get('name', 'unknown')}")
+        if len(eligible) > 5:
+            click.echo(f"  ... and {len(eligible) - 5} more")
+    except Exception:
+        pass
+
+
+@cli.command()
+def skills():
+    """List available skills."""
+    from ..skills import SkillRegistry
+
+    registry = SkillRegistry.default()
+    eligible = registry.eligible_skills()
+    unavailable = [s for s in registry.skills.values() if s not in eligible]
+
+    click.echo("Available Skills")
+    click.echo("=" * 40)
+
+    if eligible:
+        click.secho("✓ Eligible:", fg="green")
+        for skill in eligible:
+            emoji = skill.metadata.emoji or ""
+            desc = skill.description[:50] if skill.description else ""
+            click.echo(f"  {emoji} {skill.name} - {desc}...")
+    else:
+        click.echo("  (none)")
+
+    if unavailable:
+        click.secho("\n✗ Unavailable (missing requirements):", fg="yellow")
+        for skill in unavailable:
+            reqs = skill.metadata.requires
+            missing = []
+            if reqs.bins:
+                missing.append(f"bins: {', '.join(reqs.bins)}")
+            if reqs.env:
+                missing.append(f"env: {', '.join(reqs.env)}")
+            if missing:
+                click.echo(f"  {skill.name} (needs {'; '.join(missing)})")
+            else:
+                click.echo(f"  {skill.name}")
+
+
+@cli.command()
+def config():
+    """Show current configuration."""
+    click.echo("OpenFang Configuration")
+    click.echo("=" * 40)
+    click.echo(f"Host: {settings.host}")
+    click.echo(f"Port: {settings.port}")
+    click.echo(f"Heartbeat: {'enabled' if settings.heartbeat_enabled else 'disabled'} ({settings.heartbeat_interval}s)")
+    click.echo(f"Logfire: {'enabled' if settings.logfire_enabled else 'disabled'}")
+    click.echo()
+    click.echo("Channels:")
+    click.echo(f"  Telegram: {'✓ configured' if settings.telegram_bot_token else '✗ not set'}")
+    click.echo(f"  Discord: {'✓ configured' if settings.discord_bot_token else '✗ not set'}")
+    click.echo()
+    click.echo("Environment variables:")
+    click.echo("  OPENFANG_HOST, OPENFANG_PORT")
+    click.echo("  OPENFANG_TELEGRAM_BOT_TOKEN")
+    click.echo("  OPENFANG_DISCORD_BOT_TOKEN")
+    click.echo("  OPENAI_API_KEY or ANTHROPIC_API_KEY")
+
+
 def main():
     cli()
 
