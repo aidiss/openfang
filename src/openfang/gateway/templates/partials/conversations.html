@@ -1,0 +1,30 @@
+<!-- New conversation form -->
+<form hx-post="/conversations" hx-target="#convos-panel" hx-swap="innerHTML" class="mb-3 flex gap-1">
+    <input type="text" name="id" placeholder="new id (optional)" class="flex-1 px-2 py-1 text-xs border rounded">
+    <button type="submit" class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">+</button>
+</form>
+
+{% if conversations %}
+<ul class="space-y-1">
+    {% for conv in conversations %}
+    <li class="text-xs p-2 rounded group flex justify-between items-center
+               {% if conv.id == current_id %}bg-blue-100 border border-blue-300{% else %}bg-gray-50 hover:bg-gray-100{% endif %}">
+        <button hx-post="/conversations/{{ conv.id }}/switch"
+                hx-target="#convos-panel"
+                hx-swap="innerHTML"
+                class="flex-1 text-left truncate">
+            <span class="{% if conv.id == current_id %}font-medium text-blue-700{% else %}text-gray-700{% endif %}">{{ conv.id }}</span>
+            <span class="text-gray-400 ml-1">({{ conv.message_count }})</span>
+        </button>
+        {% if conv.id != current_id %}
+        <button hx-delete="/conversations/{{ conv.id }}"
+                hx-target="#convos-panel"
+                hx-swap="innerHTML"
+                class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 ml-1">×</button>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="text-gray-400 text-xs">No conversations</div>
+{% endif %}

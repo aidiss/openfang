@@ -1,0 +1,47 @@
+/* OpenFang custom styles - Python themed */
+
+:root {
+  --md-primary-fg-color: #306998;        /* Python blue */
+  --md-primary-fg-color--light: #4B8BBE; /* Python blue light */
+  --md-primary-fg-color--dark: #1e4a6e;  /* Python blue dark */
+  --md-accent-fg-color: #FFD43B;         /* Python yellow */
+}
+
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #0d1117;        /* Dark blue-black */
+  --md-default-fg-color: #e6edf3;
+  --md-code-bg-color: #161b22;
+}
+
+/* Hero section on home */
+.md-content__inner > h1:first-child {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #4B8BBE 0%, #FFD43B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Code blocks */
+.highlight code {
+  font-size: 0.85rem;
+}
+
+/* Admonitions */
+.admonition.tip {
+  border-color: var(--md-accent-fg-color);
+}
+
+/* Links */
+.md-content a:not(.md-button) {
+  text-decoration: underline;
+  text-decoration-color: var(--md-accent-fg-color);
+  text-underline-offset: 2px;
+}
+
+/* Navigation */
+.md-nav__link--active {
+  font-weight: 600;
+}

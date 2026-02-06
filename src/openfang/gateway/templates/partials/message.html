@@ -1,0 +1,8 @@
+<div class="flex {% if role == 'user' %}justify-end{% else %}justify-start{% endif %}">
+    <div class="max-w-[80%] {% if role == 'user' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %} rounded-lg px-4 py-2 shadow-sm">
+        <div class="text-xs {% if role == 'user' %}text-blue-200{% else %}text-gray-500{% endif %} mb-1">
+            {{ role | capitalize }}
+        </div>
+        <div class="message-content whitespace-pre-wrap">{{ content }}</div>
+    </div>
+</div>

@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openfang"
+version = "0.1.0"
+description = "Lightweight AI agent gateway inspired by OpenClaw"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "clai>=1.52.0",
+    "click>=8.3.1",
+    "fastapi>=0.128.1",
+    "httpx>=0.27.0",
+    "jinja2>=3.1.0",
+    "logfire[fastapi]>=3.0.0",
+    "playwright>=1.58.0",
+    "pydantic-ai-slim[openai,logfire]>=1.52.0",
+    "pydantic-settings>=2.0.0",
+    "python-telegram-bot>=22.6",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+cli = ["clai"]
+discord = ["discord.py>=2.0"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0", 
+    "pytest-playwright>=0.5", 
+    "ruff>=0.8", 
+    "ty>=0.0.1a6",
+    "pre-commit>=4.0"
+]
+docs = ["mkdocs-material>=9.0", "mkdocstrings[python]>=0.27"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    "ignore:The test .* is marked with:pytest.PytestWarning",
+    "ignore:Logfire is not configured:UserWarning",
+    "ignore:websockets.legacy is deprecated:DeprecationWarning",
+    "ignore:websockets.server.WebSocketServerProtocol is deprecated:DeprecationWarning",
+    "ignore:.*will have no effect until.*logfire.configure.*:UserWarning",
+    "ignore:No logs or spans will be created until.*:UserWarning",
+]
+
+[tool.logfire]
+ignore_no_config = true
+
+[tool.coverage.run]
+source = ["src/openfang"]
+branch = true
+omit = [
+    "src/openfang/__main__.py",
+    "src/openfang/runners/*",
+    "src/openfang/gateway/*",
+    "src/openfang/channels/telegram.py",
+    "src/openfang/capabilities/telegram.py",
+    "src/openfang/capabilities/web.py",
+]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+exclude = ["openclaw"]
+
+[tool.ty.environment]
+python-version = "3.13"
+
+[tool.bandit]
+exclude_dirs = ["tests", "openclaw"]
+skips = ["B101"]  # assert used in tests

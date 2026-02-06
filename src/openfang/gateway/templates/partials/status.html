@@ -1,0 +1,24 @@
+<div class="space-y-3">
+    <div>
+        <div class="text-gray-500">Status</div>
+        <div class="font-medium text-green-600">{{ status }}</div>
+    </div>
+    <div>
+        <div class="text-gray-500">Uptime</div>
+        <div class="font-medium">{{ uptime_str }}</div>
+    </div>
+    <div>
+        <div class="text-gray-500">Heartbeat</div>
+        <div class="font-medium {% if heartbeat.enabled %}text-green-600{% else %}text-gray-400{% endif %}">
+            {{ "Enabled" if heartbeat.enabled else "Disabled" }}
+        </div>
+        {% if heartbeat.last_at %}
+        <div class="text-xs text-gray-400">Last: {{ heartbeat.last_at }}</div>
+        {% endif %}
+        {% if heartbeat.last_alert %}
+        <div class="text-xs text-amber-600 truncate" title="{{ heartbeat.last_alert }}">
+            Alert: {{ heartbeat.last_alert[:30] }}...
+        </div>
+        {% endif %}
+    </div>
+</div>

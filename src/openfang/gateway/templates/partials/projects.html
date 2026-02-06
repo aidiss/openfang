@@ -1,0 +1,14 @@
+{% if projects %}
+<ul class="space-y-1">
+    {% for proj in projects %}
+    <li class="text-xs p-1 hover:bg-gray-50 rounded flex items-center gap-1">
+        {% if current and current[0] == proj %}
+        <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+        {% endif %}
+        <span class="truncate text-gray-700">{{ proj }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="text-gray-400 text-xs">No projects</div>
+{% endif %}

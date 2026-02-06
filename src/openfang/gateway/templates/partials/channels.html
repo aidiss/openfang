@@ -1,0 +1,117 @@
+<!-- Channel Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for channel in channels %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden {% if not channel.implemented %}opacity-75{% endif %}">
+        <!-- Channel Header -->
+        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">{{ channel.emoji }}</span>
+                <div>
+                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ channel.name }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ channel.description }}</div>
+                </div>
+            </div>
+            {% if channel.implemented %}
+            <span class="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 rounded-full">
+                {{ channel.accounts|length }} account(s)
+            </span>
+            {% else %}
+            <span class="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full">
+                Coming Soon
+            </span>
+            {% endif %}
+        </div>
+
+        {% if channel.implemented %}
+        <!-- Accounts List (only for implemented channels) -->
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for account in channel.accounts %}
+            <div class="px-4 py-3 flex items-center justify-between group">
+                <div class="flex items-center gap-3">
+                    <!-- Status indicator -->
+                    {% if account.connected %}
+                    <span class="w-2 h-2 bg-green-500 rounded-full" title="Connected"></span>
+                    {% elif account.running %}
+                    <span class="w-2 h-2 bg-yellow-500 rounded-full" title="Running"></span>
+                    {% else %}
+                    <span class="w-2 h-2 bg-gray-300 dark:bg-gray-500 rounded-full" title="Stopped"></span>
+                    {% endif %}
+
+                    <div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ account.name or account.id }}</div>
+                        {% if account.last_error %}
+                        <div class="text-xs text-red-500 dark:text-red-400 truncate max-w-32">{{ account.last_error[:30] }}...</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    {% if account.running %}
+                    <button hx-post="/channels/{{ channel.id }}/accounts/{{ account.id }}/stop"
+                            hx-target="#channels-panel"
+                            hx-swap="innerHTML"
+                            class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded">
+                        Stop
+                    </button>
+                    {% else %}
+                    <button hx-post="/channels/{{ channel.id }}/accounts/{{ account.id }}/start"
+                            hx-target="#channels-panel"
+                            hx-swap="innerHTML"
+                            class="px-2 py-1 text-xs text-white rounded"
+                            style="background-color: var(--python-blue)">
+                        Start
+                    </button>
+                    {% endif %}
+                    <button hx-delete="/channels/{{ channel.id }}/accounts/{{ account.id }}"
+                            hx-target="#channels-panel"
+                            hx-swap="innerHTML"
+                            hx-confirm="Remove this account?"
+                            class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        ×
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">No accounts configured</div>
+            {% endfor %}
+        </div>
+
+        <!-- Add Account Form -->
+        <form hx-post="/channels/{{ channel.id }}/accounts"
+              hx-target="#channels-panel"
+              hx-swap="innerHTML"
+              class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+            <div class="flex flex-col gap-2">
+                <div class="flex gap-2">
+                    <input type="text" name="id" placeholder="Account ID"
+                           class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           required>
+                    <input type="password" name="token" placeholder="Token"
+                           class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           required>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" name="name" placeholder="Display name (optional)"
+                           class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <button type="submit"
+                            class="px-3 py-1 text-sm text-white rounded"
+                            style="background-color: var(--python-blue)">
+                        Add
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% else %}
+        <!-- Stub channel - show info only -->
+        <div class="px-4 py-6 text-center text-gray-400 dark:text-gray-500">
+            <div class="text-sm mb-2">Not yet implemented</div>
+            <div class="text-xs">
+                Required: {{ channel.config_fields|join(', ') }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="text-gray-400 dark:text-gray-500 text-sm col-span-full">No channels available</div>
+    {% endfor %}
+</div>

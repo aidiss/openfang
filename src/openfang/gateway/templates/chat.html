@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}OpenFang Gateway{% endblock %}
+
+{% block head %}
+<style>
+    /* Navigation items */
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        border-radius: 0.25rem;
+        margin: 0 0.5rem;
+    }
+    .nav-item:hover:not(.disabled) {
+        background-color: var(--bg-tertiary);
+    }
+    .nav-item.active {
+        background-color: #e8f4fc;
+        color: var(--python-blue);
+    }
+    .dark .nav-item.active {
+        background-color: #1e3a5f;
+    }
+    .nav-item.disabled {
+        color: var(--text-muted);
+        cursor: not-allowed;
+    }
+
+    /* Python-themed button */
+    .btn-python {
+        background-color: var(--python-blue);
+    }
+    .btn-python:hover:not(:disabled) {
+        background-color: var(--python-blue-light);
+    }
+
+    /* Python-themed focus ring */
+    .focus-python:focus {
+        box-shadow: 0 0 0 2px var(--python-blue-light);
+    }
+
+    /* Message styling */
+    .message-content pre {
+        background-color: #1f2937;
+        color: #e5e7eb;
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        overflow-x: auto;
+        margin: 0.5rem 0;
+    }
+    .message-content code {
+        background-color: #e5e7eb;
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+    }
+    .dark .message-content code {
+        background-color: #374151;
+    }
+    .message-content pre code {
+        background-color: transparent;
+        padding: 0;
+    }
+    .htmx-request .send-btn {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    /* Theme toggle button */
+    .theme-toggle {
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .theme-toggle:hover {
+        background-color: var(--bg-tertiary);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div x-data="app()" class="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <!-- Sidebar -->
+    <aside class="w-56 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+        <!-- Logo -->
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🐍</span>
+                <div>
+                    <div class="font-bold text-sm tracking-wide" style="color: var(--python-blue)">OPENFANG</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">GATEWAY DASHBOARD</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-2">
+            <!-- Chat Section -->
+            <div class="px-3 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Chat</div>
+            <button @click="view = 'chat'" :class="{ 'active': view === 'chat' }" class="nav-item w-full text-left">
+                <span>💬</span> Chat
+            </button>
+
+            <!-- Control Section -->
+            <div class="px-3 py-2 mt-4 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Control</div>
+            <button @click="view = 'overview'" :class="{ 'active': view === 'overview' }" class="nav-item w-full text-left">
+                <span>📊</span> Overview
+            </button>
+            <button @click="view = 'channels'" :class="{ 'active': view === 'channels' }" class="nav-item w-full text-left">
+                <span>🔗</span> Channels
+            </button>
+            <span class="nav-item disabled"><span>📡</span> Instances</span>
+            <button @click="view = 'sessions'" :class="{ 'active': view === 'sessions' }" class="nav-item w-full text-left">
+                <span>📋</span> Sessions
+            </button>
+            <button @click="view = 'cron'" :class="{ 'active': view === 'cron' }" class="nav-item w-full text-left">
+                <span>⏰</span> Cron Jobs
+            </button>
+
+            <!-- Agent Section -->
+            <div class="px-3 py-2 mt-4 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Agent</div>
+            <button @click="view = 'skills'" :class="{ 'active': view === 'skills' }" class="nav-item w-full text-left">
+                <span>⚡</span> Skills
+            </button>
+            <span class="nav-item disabled"><span>💻</span> Nodes</span>
+
+            <!-- Settings Section -->
+            <div class="px-3 py-2 mt-4 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Settings</div>
+            <span class="nav-item disabled"><span>⚙️</span> Config</span>
+            <span class="nav-item disabled"><span>🐛</span> Debug</span>
+            <span class="nav-item disabled"><span>📜</span> Logs</span>
+
+            <!-- Resources Section -->
+            <div class="px-3 py-2 mt-4 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Resources</div>
+            <button @click="view = 'memory'" :class="{ 'active': view === 'memory' }" class="nav-item w-full text-left">
+                <span>🧠</span> Memory
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col">
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center justify-between">
+            <div>
+                <!-- Dynamic title based on view -->
+                <h1 x-show="view === 'chat'" class="text-xl font-semibold text-gray-800 dark:text-gray-100">Chat</h1>
+                <h1 x-show="view === 'sessions'" class="text-xl font-semibold text-gray-800 dark:text-gray-100">Sessions</h1>
+                <h1 x-show="view === 'channels'" class="text-xl font-semibold text-gray-800 dark:text-gray-100">Channels</h1>
+                <h1 x-show="view === 'cron'" class="text-xl font-semibold text-gray-800 dark:text-gray-100">Cron Jobs</h1>
+                <h1 x-show="view === 'memory'" class="text-xl font-semibold text-gray-800 dark:text-gray-100">Memory</h1>
+                <h1 x-show="view === 'skills'" class="text-xl font-semibold text-gray-800 dark:text-gray-100">Skills</h1>
+                <h1 x-show="view === 'overview'" class="text-xl font-semibold text-gray-800 dark:text-gray-100">Overview</h1>
+                <p x-show="view === 'chat'" class="text-sm text-gray-500 dark:text-gray-400">Direct gateway chat session for quick interventions</p>
+                <p x-show="view === 'channels'" class="text-sm text-gray-500 dark:text-gray-400">External messaging platform connections</p>
+                <p x-show="view === 'skills'" class="text-sm text-gray-500 dark:text-gray-400">Agent capabilities and integrations</p>
+                <p x-show="view === 'overview'" class="text-sm text-gray-500 dark:text-gray-400">Gateway status and quick stats</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Theme toggle -->
+                <button @click="document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light')"
+                        class="theme-toggle text-gray-500 dark:text-gray-400"
+                        :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+                    <span class="dark:hidden">🌙</span>
+                    <span class="hidden dark:inline">☀️</span>
+                </button>
+
+                <!-- Health badge -->
+                <div id="health-badge"
+                     hx-get="/health"
+                     hx-trigger="load, every 10s"
+                     hx-swap="innerHTML"
+                     class="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/30 rounded-full">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span class="text-sm text-green-700 dark:text-green-400">Health OK</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-hidden">
+            <!-- Chat View -->
+            <div x-show="view === 'chat'" class="h-full flex flex-col">
+                <!-- Chat header with session info -->
+                <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-2 flex items-center justify-between">
+                    <div id="chat-header"
+                         hx-get="/conversation/current"
+                         hx-trigger="load, convChanged from:body"
+                         hx-swap="innerHTML"
+                         class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <span>{{ conversation_id }}</span>
+                    </div>
+                    <button hx-post="/conversations"
+                            hx-target="#convos-panel"
+                            hx-swap="innerHTML"
+                            class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors">
+                        New session
+                    </button>
+                </div>
+
+                <!-- Messages -->
+                <div id="messages"
+                     hx-ext="sse"
+                     sse-connect="/events"
+                     sse-swap="chat"
+                     hx-swap="beforeend scroll:bottom"
+                     class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-900">
+                </div>
+
+                <!-- Input -->
+                <form hx-post="/chat"
+                      hx-target="#messages"
+                      hx-swap="beforeend scroll:bottom"
+                      @htmx:before-request="sending = true"
+                      @htmx:after-request="sending = false; message = ''; $refs.input.focus()"
+                      class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+                    <div class="flex gap-3">
+                        <input type="text"
+                               name="message"
+                               x-model="message"
+                               x-ref="input"
+                               :disabled="sending"
+                               placeholder="Message (↵ to send, Shift+↵ for line breaks)"
+                               autocomplete="off"
+                               class="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus-python focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-500">
+                        <button type="submit"
+                                :disabled="!message.trim() || sending"
+                                class="send-btn btn-python px-6 py-2.5 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium">
+                            Send <span class="opacity-60">↵</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sessions View -->
+            <div x-show="view === 'sessions'" class="h-full overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
+                <div id="convos-panel"
+                     hx-get="/conversations"
+                     hx-trigger="load, every 10s"
+                     hx-swap="innerHTML">
+                    <div class="text-gray-400 dark:text-gray-500">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Channels View -->
+            <div x-show="view === 'channels'" class="h-full overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
+                <div id="channels-panel"
+                     hx-get="/channels"
+                     hx-trigger="load, every 10s"
+                     hx-swap="innerHTML">
+                    <div class="text-gray-400 dark:text-gray-500">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Cron View -->
+            <div x-show="view === 'cron'" class="h-full overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
+                <div id="cron-panel"
+                     hx-get="/cron"
+                     hx-trigger="load, every 30s"
+                     hx-swap="innerHTML">
+                    <div class="text-gray-400 dark:text-gray-500">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Memory View -->
+            <div x-show="view === 'memory'" class="h-full overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
+                <div id="memory-panel"
+                     hx-get="/memory"
+                     hx-trigger="load, every 30s"
+                     hx-swap="innerHTML">
+                    <div class="text-gray-400 dark:text-gray-500">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Skills View -->
+            <div x-show="view === 'skills'" class="h-full overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
+                <div id="skills-panel"
+                     hx-get="/skills"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                    <div class="text-gray-400 dark:text-gray-500">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Overview View -->
+            <div x-show="view === 'overview'" class="h-full overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
+                <div id="overview-panel"
+                     hx-get="/overview"
+                     hx-trigger="load, every 30s"
+                     hx-swap="innerHTML">
+                    <div class="text-gray-400 dark:text-gray-500">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function app() {
+    return {
+        view: 'chat',
+        message: '',
+        sending: false,
+        get darkMode() {
+            return document.documentElement.classList.contains('dark');
+        },
+        init() {
+            this.$nextTick(() => {
+                if (this.$refs.input) this.$refs.input.focus();
+            });
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    if (this.$refs.input) this.$refs.input.focus();
+                }
+                if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+                    e.preventDefault();
+                    htmx.ajax('POST', '/conversations', {target: '#convos-panel'});
+                }
+            });
+        }
+    }
+}
+
+// Auto-scroll on new messages
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail.target.id === 'messages') {
+        evt.detail.target.scrollTop = evt.detail.target.scrollHeight;
+    }
+    if (evt.detail.target.id === 'convos-panel') {
+        document.getElementById('messages').innerHTML = '';
+        htmx.trigger(document.body, 'convChanged');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% if ok %}
+<span class="text-green-600">OK ({{ duration_ms }}ms)</span>
+{% else %}
+<span class="text-amber-600">Alert: {{ alert[:50] }}...</span>
+{% endif %}

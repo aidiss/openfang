@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Generated docs
+site/
+
+# Reference project
+openclaw
+
+# Secrets
+.env
+
+# Coverage
+.coverage

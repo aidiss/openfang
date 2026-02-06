@@ -1,0 +1,6 @@
+# Cyclomatic complexity thresholds
+# A=1-5, B=6-10, C=11-20, D=21-30, E=31-40, F=41+
+
+max-absolute: C  # No single function > 20
+max-modules: B   # No module average > 10
+max-average: A   # Codebase average ≤ 5
