@@ -97,6 +97,37 @@ class Doctor:
         )
         return None
 
+    def check_pydantic_gateway(self) -> bool:
+        """Check if pydantic-ai gateway is configured and reachable."""
+        gateway_key = os.environ.get("PYDANTIC_AI_GATEWAY_API_KEY")
+        if not gateway_key:
+            self.warn("Pydantic AI Gateway", "Not configured (set PYDANTIC_AI_GATEWAY_API_KEY to enable)")
+            return True
+
+        gateway_url = os.environ.get("PYDANTIC_AI_GATEWAY_URL", "https://gateway.pydantic.dev")
+
+        try:
+            # Try to verify the gateway is reachable
+            resp = httpx.get(
+                f"{gateway_url}/health",
+                headers={"Authorization": f"Bearer {gateway_key}"},
+                timeout=5,
+            )
+            if resp.status_code == 200:
+                return self.check("Pydantic AI Gateway", True, f"Connected to {gateway_url}")
+            # Some gateways may not have /health, try root
+            if resp.status_code == 404:
+                return self.check("Pydantic AI Gateway", True, f"Configured ({gateway_url})")
+            return self.check(
+                "Pydantic AI Gateway",
+                False,
+                f"Gateway returned {resp.status_code}",
+                "Check PYDANTIC_AI_GATEWAY_API_KEY and PYDANTIC_AI_GATEWAY_URL",
+            )
+        except httpx.RequestError as e:
+            self.warn("Pydantic AI Gateway", f"Could not verify connectivity: {e}")
+            return True
+
     def check_openai_key_valid(self) -> bool:
         """Verify OpenAI API key works."""
         key = os.environ.get("OPENAI_API_KEY")
@@ -196,6 +227,7 @@ class Doctor:
         self.check_python_version()
         self.check_env_file()
         self.check_api_key()
+        self.check_pydantic_gateway()
         self.check_openai_key_valid()
         self.check_gateway()
         self.check_telegram()
