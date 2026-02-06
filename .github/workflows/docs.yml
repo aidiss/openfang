@@ -20,7 +20,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
 
       - name: Install dependencies
-        run: uv sync --group docs
+        run: uv sync --extra docs
 
       - name: Build and deploy
         run: uv run mkdocs gh-deploy --force
