@@ -12,7 +12,7 @@ import logfire
 from openfang.agent import create_agent
 from openfang.capabilities import InMemoryConversations, InMemoryCron
 from openfang.client import GatewayClient
-from openfang.gateway import Gateway, HeartbeatConfig, serve
+from openfang.gateway import create_app
 from openfang.models import User
 from openfang.runners.cron import run_cron_with_agent
 from openfang.runners.telegram import run_telegram_bot
@@ -84,16 +84,11 @@ def run(prompt: str):
 @cli.command()
 @click.option("--host", default=None, help="Bind address")
 @click.option("--port", default=None, type=int, help="Port")
-@click.option("--heartbeat/--no-heartbeat", default=None, help="Enable heartbeat")
 @click.option("--logfire/--no-logfire", "use_logfire", default=None, help="Enable logfire")
-def gateway(host: str | None, port: int | None, heartbeat: bool | None, use_logfire: bool | None):
+def gateway(host: str | None, port: int | None, use_logfire: bool | None):
     """Run the OpenFang gateway HTTP server."""
-    from openfang.chat import start_conversation
-    from openfang.deps import CommsAdapters, Deps, SchedulingAdapters, StorageAdapters, WebAdapters, WorkspaceAdapters
-
     host = host or settings.host
     port = port or settings.port
-    heartbeat = heartbeat if heartbeat is not None else settings.heartbeat_enabled
     use_logfire = use_logfire if use_logfire is not None else settings.logfire_enabled
 
     if use_logfire:
@@ -103,19 +98,12 @@ def gateway(host: str | None, port: int | None, heartbeat: bool | None, use_logf
     click.echo(f"Starting gateway on http://{host}:{port}")
 
     async def _run():
-        user = User(id=0, email="gateway@system", roles={"admin"})
-        root = Path.cwd()
-        deps = Deps(
-            user=user,
-            storage=StorageAdapters.default(root),
-            web_adapters=WebAdapters.default(),
-            workspace=WorkspaceAdapters.default(root),
-            scheduling=SchedulingAdapters.default(),
-            comms=CommsAdapters.default(),
-        )
-        await start_conversation(deps, "web-session")
-        gw = Gateway(deps=deps, heartbeat=HeartbeatConfig(enabled=heartbeat, interval=settings.heartbeat_interval))
-        await serve(gw, host=host, port=port)
+        import uvicorn
+
+        app = create_app()
+        config = uvicorn.Config(app, host=host, port=port, log_level="info")
+        server = uvicorn.Server(config)
+        await server.serve()
 
     run_async(_run())
 

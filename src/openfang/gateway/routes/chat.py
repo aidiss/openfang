@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from openfang.chat import chat as do_chat
-from openfang.gateway.deps import GatewayDep, templates
+from openfang.gateway.deps import DepsDep, templates
 from openfang.gateway.helpers import is_htmx
 
 router = APIRouter(tags=["chat"])
@@ -18,7 +18,7 @@ class ChatResponse(BaseModel):
 
 
 @router.post("/chat")
-async def chat(request: Request, gateway: GatewayDep):
+async def chat(request: Request, deps: DepsDep):
     """Send a message to the agent."""
     htmx = is_htmx(request)
 
@@ -32,7 +32,7 @@ async def chat(request: Request, gateway: GatewayDep):
     if not user_message:
         return {"error": "No message provided"}
 
-    response = await do_chat(gateway.deps, user_message)
+    response = await do_chat(deps, user_message)
 
     if htmx:
         user_html = templates.TemplateResponse(

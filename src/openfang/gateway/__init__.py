@@ -1,6 +1,5 @@
-"""Gateway - HTTP server for deps agents."""
+"""Gateway - HTTP server for AI agents."""
 
-from .core import Gateway, serve
-from .heartbeat import HeartbeatConfig
+from .app import create_app
 
-__all__ = ["Gateway", "HeartbeatConfig", "serve"]
+__all__ = ["create_app"]

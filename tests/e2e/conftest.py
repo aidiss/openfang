@@ -12,6 +12,7 @@ from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING
 
 import pytest
+from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from openfang.capabilities import (
@@ -32,8 +33,7 @@ from openfang.deps import (
     WebAdapters,
     WorkspaceAdapters,
 )
-from openfang.gateway.app import app, init_app
-from openfang.gateway.core import Gateway
+from openfang.gateway import create_app
 from openfang.models import User
 from openfang.skills import SkillRegistry
 
@@ -77,11 +77,28 @@ def e2e_deps(e2e_user: User, tmp_path: Path) -> Deps:
 
 
 @pytest.fixture
-def e2e_gateway(e2e_deps: Deps) -> Gateway:
-    """Gateway with test deps, app initialized."""
-    gw = Gateway(deps=e2e_deps)
-    init_app(gw)
-    return gw
+def e2e_app(e2e_deps: Deps) -> FastAPI:
+    """FastAPI app with test deps injected via dependency override."""
+    from datetime import datetime
+
+    from openfang.gateway.deps import get_channels, get_deps
+
+    app = create_app()
+
+    # Override dependencies
+    app.dependency_overrides[get_deps] = lambda: e2e_deps
+    app.dependency_overrides[get_channels] = lambda: e2e_deps.comms.channels
+
+    # Set runtime state (normally done in lifespan, but lifespan doesn't run with ASGITransport)
+    app.state.started_at = datetime.now()
+    app.state.last_heartbeat_at = None
+    app.state.last_heartbeat_alert = None
+    app.state.events_queue = asyncio.Queue()
+    app.state.subscribers = 0
+    app.state.channels = e2e_deps.comms.channels
+    app.state.dispatcher = None
+
+    return app
 
 
 # =============================================================================
@@ -90,10 +107,10 @@ def e2e_gateway(e2e_deps: Deps) -> Gateway:
 
 
 @pytest.fixture
-async def client(e2e_gateway: Gateway) -> AsyncIterator[AsyncClient]:
+async def client(e2e_app: FastAPI) -> AsyncIterator[AsyncClient]:
     """Fast API client via ASGITransport - no server needed."""
     async with AsyncClient(
-        transport=ASGITransport(app=app),
+        transport=ASGITransport(app=e2e_app),
         base_url="http://test",
     ) as ac:
         yield ac
@@ -105,7 +122,7 @@ async def client(e2e_gateway: Gateway) -> AsyncIterator[AsyncClient]:
 
 
 @pytest.fixture
-async def live_server(e2e_gateway: Gateway) -> AsyncIterator[str]:
+async def live_server(e2e_app: FastAPI) -> AsyncIterator[str]:
     """Run gateway on random port for browser tests."""
     import socket
 
@@ -116,7 +133,7 @@ async def live_server(e2e_gateway: Gateway) -> AsyncIterator[str]:
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
 
-    config = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="error")
+    config = uvicorn.Config(e2e_app, host="127.0.0.1", port=port, log_level="error")
     server = uvicorn.Server(config)
     task = asyncio.create_task(server.serve())
 

@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING, Awaitable, Callable
 
 from .resolver import ResolvedRoute, RouteResolver
 
 if TYPE_CHECKING:
     from ..channels.models import InboundMessage
-    from ..deps import Deps
     from ..protocols import Channels
 
 logger = logging.getLogger(__name__)
@@ -18,26 +18,48 @@ logger = logging.getLogger(__name__)
 MessageHandler = Callable[["InboundMessage"], Awaitable[None]]
 
 
+def _create_deps_for_session(session_key: str):
+    """Create deps for a specific session/request.
+
+    This is called per-message to create isolated deps for the agent run.
+    """
+    from ..deps import CommsAdapters, Deps, SchedulingAdapters, StorageAdapters, WebAdapters, WorkspaceAdapters
+    from ..models import User
+
+    user = User(id=0, email="channel@system", roles={"admin"})
+    root = Path.cwd()
+
+    return Deps(
+        user=user,
+        conversation_id=session_key,
+        storage=StorageAdapters.default(root),
+        web_adapters=WebAdapters.default(),
+        workspace=WorkspaceAdapters.default(root),
+        scheduling=SchedulingAdapters.default(),
+        comms=CommsAdapters.default(),
+    )
+
+
 class MessageDispatcher:
     """Dispatches inbound messages to agent and sends responses back.
 
     This is the central message router that:
     1. Receives inbound messages from channels
     2. Resolves routing (session key, reply target)
-    3. Runs the agent with message context
-    4. Sends the response back to the channel
+    3. Creates deps for the request
+    4. Runs the agent with message context
+    5. Sends the response back to the channel
+
+    Note: Does NOT hold deps - creates them per-request.
     """
 
     def __init__(
         self,
-        deps: Deps,
         channels: Channels,
         resolver: RouteResolver | None = None,
     ) -> None:
-        self.deps = deps
         self.channels = channels
         self.resolver = resolver or RouteResolver()
-        self._running = False
 
     async def handle_message(self, message: InboundMessage) -> None:
         """Handle an inbound message from any channel.
@@ -93,12 +115,14 @@ class MessageDispatcher:
         """
         from ..chat import chat, start_conversation
 
+        # Create deps for this request
+        deps = _create_deps_for_session(route.session_key)
+
         # Set up conversation context
-        self.deps.conversation_id = route.session_key
-        await start_conversation(self.deps, route.session_key)
+        await start_conversation(deps, route.session_key)
 
         # Run agent
-        response = await chat(self.deps, message.text)
+        response = await chat(deps, message.text)
 
         return response
 

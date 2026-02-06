@@ -5,41 +5,40 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
-from openfang.gateway.deps import GatewayDep, templates
+from openfang.gateway.deps import DepsDep, StateDep, UptimeDep, templates
 from openfang.gateway.helpers import htmx_or_json
+from openfang.settings import settings
 
 router = APIRouter(tags=["core"])
 
 
 @router.get("/", response_class=HTMLResponse)
-async def index(request: Request, gateway: GatewayDep):
+async def index(request: Request, deps: DepsDep):
     """Serve the chat interface."""
-    return templates.TemplateResponse(request, "chat.html", {"conversation_id": gateway.deps.conversation_id})
+    return templates.TemplateResponse(request, "chat.html", {"conversation_id": deps.conversation_id})
 
 
 @router.get("/health")
-async def health(request: Request, gateway: GatewayDep):
+async def health(request: Request, state: StateDep, uptime: UptimeDep):
     """Health check with heartbeat status."""
     data = {
         "status": "ok",
-        "uptime": gateway.uptime,
+        "uptime": uptime,
         "heartbeat": {
-            "enabled": gateway.heartbeat.enabled,
-            "interval": gateway.heartbeat.interval,
-            "last_at": gateway.last_heartbeat_at.isoformat() if gateway.last_heartbeat_at else None,
-            "last_alert": gateway.last_heartbeat_alert[:200] if gateway.last_heartbeat_alert else None,
+            "enabled": settings.heartbeat_enabled,
+            "interval": settings.heartbeat_interval,
+            "last_at": state.last_heartbeat_at.isoformat() if state.last_heartbeat_at else None,
+            "last_alert": state.last_heartbeat_alert[:200] if state.last_heartbeat_alert else None,
         },
     }
     return htmx_or_json(request, templates, "partials/health_badge.html", data)
 
 
 @router.get("/overview")
-async def overview(request: Request, gateway: GatewayDep):
+async def overview(request: Request, deps: DepsDep, state: StateDep, uptime: UptimeDep):
     """Overview dashboard with gateway stats."""
-    deps = gateway.deps
-
     # Calculate uptime in human-readable format
-    uptime_secs = int(gateway.uptime)
+    uptime_secs = int(uptime)
     hours, remainder = divmod(uptime_secs, 3600)
     minutes, seconds = divmod(remainder, 60)
     uptime_str = f"{hours}h {minutes}m {seconds}s" if hours else f"{minutes}m {seconds}s"
@@ -59,9 +58,9 @@ async def overview(request: Request, gateway: GatewayDep):
     data = {
         "uptime": uptime_str,
         "uptime_secs": uptime_secs,
-        "heartbeat_enabled": gateway.heartbeat.enabled,
-        "heartbeat_interval": gateway.heartbeat.interval,
-        "last_heartbeat": gateway.last_heartbeat_at.isoformat() if gateway.last_heartbeat_at else None,
+        "heartbeat_enabled": settings.heartbeat_enabled,
+        "heartbeat_interval": settings.heartbeat_interval,
+        "last_heartbeat": state.last_heartbeat_at.isoformat() if state.last_heartbeat_at else None,
         "skills_total": len(all_skills),
         "skills_active": len(eligible_skills),
         "memory_count": len(memory_keys),

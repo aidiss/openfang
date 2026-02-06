@@ -1,13 +1,19 @@
-"""Gateway HTTP app - FastAPI with routers."""
+"""Gateway HTTP app - FastAPI with clean lifespan."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+import asyncio
+import contextlib
+import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from datetime import datetime
+from openfang.channels import ChannelRegistry
+from openfang.messaging import MessageDispatcher, RouteResolver
 import logfire
 from fastapi import FastAPI
-from pydantic import BaseModel
 
+from .heartbeat import heartbeat_loop
 from .routes import (
     channels_router,
     chat_router,
@@ -22,75 +28,63 @@ from .routes import (
     webhooks_router,
 )
 
-if TYPE_CHECKING:
-    from .core import Gateway
+logger = logging.getLogger(__name__)
 
 
-# =============================================================================
-# Request/Response models
-# =============================================================================
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Manage gateway lifecycle: channels, dispatcher, heartbeat."""
+    # Runtime state (initialized when server starts)
+    app.state.started_at = datetime.now()
+    app.state.last_heartbeat_at = None
+    app.state.last_heartbeat_alert = None
+    app.state.events_queue = asyncio.Queue()
+    app.state.subscribers = 0
+
+    # Infrastructure
+    channels = ChannelRegistry.default()
+    dispatcher = MessageDispatcher(channels=channels, resolver=RouteResolver())
+    channels.set_message_handler(dispatcher.handle_message)
+    await channels.start_all()
+    app.state.channels = channels
+    app.state.dispatcher = dispatcher
+
+    heartbeat_task = asyncio.create_task(heartbeat_loop(app.state))
+    logger.info("Gateway started")
+
+    yield
+
+    heartbeat_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await heartbeat_task
+    await channels.stop_all()
+    logger.info("Gateway stopped")
 
 
-class ChatRequest(BaseModel):
-    message: str
+def create_app() -> FastAPI:
+    """Create FastAPI app."""
+    app = FastAPI(
+        title="OpenFang Gateway",
+        description="HTTP gateway for AI agents with heartbeat",
+        version="0.1.0",
+        lifespan=lifespan,
+    )
 
+    # Instrument and add routers
+    logfire.instrument_fastapi(app)
+    for router in [
+        core_router,
+        chat_router,
+        heartbeat_router,
+        conversations_router,
+        cron_router,
+        memory_router,
+        projects_router,
+        skills_router,
+        channels_router,
+        events_router,
+        webhooks_router,
+    ]:
+        app.include_router(router)
 
-class ChatResponse(BaseModel):
-    response: str
-
-
-class HeartbeatStatus(BaseModel):
-    enabled: bool
-    interval: int
-    last_at: str | None
-    last_alert: str | None
-
-
-class HeartbeatResult(BaseModel):
-    ok: bool
-    alert: str | None
-    duration_ms: int
-
-
-class HealthResponse(BaseModel):
-    status: str
-    uptime: float
-    heartbeat: HeartbeatStatus
-
-
-# =============================================================================
-# App instance
-# =============================================================================
-
-app = FastAPI(
-    title="OpenFang Gateway",
-    description="HTTP gateway for AI agents with heartbeat",
-    version="0.1.0",
-)
-
-# Instrument FastAPI with logfire
-logfire.instrument_fastapi(app)
-
-# Include all routers
-app.include_router(core_router)
-app.include_router(chat_router)
-app.include_router(heartbeat_router)
-app.include_router(conversations_router)
-app.include_router(cron_router)
-app.include_router(memory_router)
-app.include_router(projects_router)
-app.include_router(skills_router)
-app.include_router(channels_router)
-app.include_router(events_router)
-app.include_router(webhooks_router)
-
-
-# =============================================================================
-# App initialization
-# =============================================================================
-
-
-def init_app(gw: Gateway) -> FastAPI:
-    """Initialize app with gateway instance."""
-    app.state.gateway = gw
     return app

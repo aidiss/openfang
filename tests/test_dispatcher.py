@@ -13,14 +13,6 @@ class TestMessageDispatcher:
     """Test message dispatcher."""
 
     @pytest.fixture
-    def mock_deps(self):
-        """Create mock deps."""
-        deps = MagicMock()
-        deps.conversation_id = None
-        deps.conversations = MagicMock()
-        return deps
-
-    @pytest.fixture
     def mock_channels(self):
         """Create mock channels registry."""
         channels = MagicMock()
@@ -30,8 +22,8 @@ class TestMessageDispatcher:
         return channels
 
     @pytest.fixture
-    def dispatcher(self, mock_deps, mock_channels):
-        return MessageDispatcher(deps=mock_deps, channels=mock_channels)
+    def dispatcher(self, mock_channels):
+        return MessageDispatcher(channels=mock_channels)
 
     @pytest.fixture
     def sample_message(self):

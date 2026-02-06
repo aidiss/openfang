@@ -7,17 +7,18 @@ import json
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
-from openfang.gateway.deps import GatewayDep, templates
+from openfang.gateway import sse
+from openfang.gateway.deps import StateDep, templates
 
 router = APIRouter(tags=["events"])
 
 
 @router.get("/events")
-async def events(request: Request, gateway: GatewayDep):
+async def events(request: Request, state: StateDep):
     """SSE event stream for real-time updates."""
 
     async def stream():
-        async for event in gateway.events():
+        async for event in sse.events(state):
             event_type = event.get("type", "message")
 
             if event_type == "chat":

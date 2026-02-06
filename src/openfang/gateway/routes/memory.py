@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request
 
-from openfang.gateway.deps import GatewayDep, MemoryDataDep, get_memory_data, templates
+from openfang.gateway.deps import DepsDep, MemoryDataDep, get_memory_data, templates
 from openfang.gateway.helpers import htmx_error, htmx_or_json, is_htmx
 
 router = APIRouter(prefix="/memory", tags=["memory"])
@@ -17,7 +17,7 @@ async def memory_list(request: Request, items: MemoryDataDep):
 
 
 @router.post("")
-async def memory_set(request: Request, gateway: GatewayDep):
+async def memory_set(request: Request, deps: DepsDep):
     """Set a memory key."""
     form = await request.form()
     key = str(form.get("key", ""))
@@ -26,20 +26,20 @@ async def memory_set(request: Request, gateway: GatewayDep):
     if not key:
         return htmx_error(request, "Key required")
 
-    await gateway.deps.storage.memory.set(key, value)
+    await deps.storage.memory.set(key, value)
 
     if is_htmx(request):
-        items = await get_memory_data(gateway)
+        items = await get_memory_data(deps)
         return templates.TemplateResponse(request, "partials/memory.html", {"items": items})
     return {"key": key, "value": value}
 
 
 @router.delete("/{key}")
-async def memory_delete(request: Request, key: str, gateway: GatewayDep):
+async def memory_delete(request: Request, key: str, deps: DepsDep):
     """Delete a memory key."""
-    await gateway.deps.storage.memory.delete(key)
+    await deps.storage.memory.delete(key)
 
     if is_htmx(request):
-        items = await get_memory_data(gateway)
+        items = await get_memory_data(deps)
         return templates.TemplateResponse(request, "partials/memory.html", {"items": items})
     return {"deleted": key}

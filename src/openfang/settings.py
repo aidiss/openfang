@@ -30,7 +30,10 @@ class Settings(BaseSettings):
 
     # Heartbeat
     heartbeat_enabled: bool = True
-    heartbeat_interval: int = 1800  # 30 minutes in seconds
+    heartbeat_interval: int = 1800  # 30 minutes
+    heartbeat_prompt: str = "Check HEARTBEAT.md if it exists. If nothing needs attention, reply exactly: HEARTBEAT_OK"
+    heartbeat_ack_token: str = "HEARTBEAT_OK"
+    heartbeat_ack_max_len: int = 300
 
     # Logfire
     logfire_enabled: bool = True

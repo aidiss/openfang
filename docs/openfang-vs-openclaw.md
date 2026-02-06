@@ -90,6 +90,71 @@ openfang message send "Hi" --to user --channel telegram
 
 ---
 
+## Gateway Architecture
+
+| Aspect | OpenClaw | OpenFang | Why Different |
+|--------|----------|----------|---------------|
+| **Protocol** | WebSocket RPC | HTTP REST + SSE | Simpler, no native apps planned |
+| **Channels** | Separate processes | Unified in gateway | Single `openfang gateway` runs everything |
+| **Native apps** | Supported (iOS, Mac, CLI) | Not planned | Web UI sufficient |
+| **Device pairing** | Yes (cryptographic) | No | Complexity not needed |
+| **Single process** | No | Yes | Simpler deployment |
+
+### OpenClaw Gateway
+
+WebSocket RPC server for direct clients (CLI, mobile apps, web UI). Channels run separately.
+
+```
+WebSocket Clients (CLI, iOS, Mac, Web)
+         │
+         ▼
+┌─────────────────────────────────┐
+│      Gateway (WebSocket RPC)    │
+│  - Routes RPC methods           │
+│  - Broadcasts events            │
+│  - Device auth & pairing        │
+└─────────────────────────────────┘
+         │
+         ▼
+   dispatchInboundMessage()
+```
+
+**Key code paths:**
+
+- WebSocket handler: [openclaw/src/gateway/server/ws-connection/message-handler.ts](../openclaw/src/gateway/server/ws-connection/message-handler.ts)
+- Method routing: [openclaw/src/gateway/server-methods.ts](../openclaw/src/gateway/server-methods.ts)
+- Chat handler: [openclaw/src/gateway/server-methods/chat.ts](../openclaw/src/gateway/server-methods/chat.ts) (`chat.send` at line 302)
+
+### OpenFang Gateway
+
+HTTP server that runs everything in one process - web UI, API, and all channels.
+
+```
+┌─────────────────────────────────┐
+│     Gateway (HTTP + Channels)   │
+│  - HTTP API + Web UI            │
+│  - SSE for events               │
+│  - All channels (Telegram, etc) │
+└─────────────────────────────────┘
+         │
+         ▼
+    Dispatcher → Agent
+```
+
+**Single command runs everything:**
+```bash
+uv run python -m openfang gateway
+```
+
+**Key code paths:**
+
+- Gateway class: [src/openfang/gateway/core.py](../src/openfang/gateway/core.py) (line 24)
+- Start channels: [src/openfang/gateway/core.py](../src/openfang/gateway/core.py) (`start_channels()` at line 57)
+- Channel registry: [src/openfang/channels/registry.py](../src/openfang/channels/registry.py) (`start_all()` at line 159)
+- Message dispatcher: [src/openfang/messaging/dispatcher.py](../src/openfang/messaging/dispatcher.py)
+
+---
+
 ## UI Approach
 
 | Aspect | OpenClaw | OpenFang | Why Different |

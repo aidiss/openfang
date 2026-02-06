@@ -315,6 +315,14 @@ class Channels(Protocol):
         """Stop an account on a channel."""
         ...
 
+    async def start_all(self) -> None:
+        """Start all configured channel accounts."""
+        ...
+
+    async def stop_all(self) -> None:
+        """Stop all running channel accounts."""
+        ...
+
     async def status(self) -> list[ChannelStatus]:
         """Get status of all accounts across all channels."""
         ...

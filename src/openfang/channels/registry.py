@@ -155,3 +155,40 @@ class ChannelRegistry:
             if hasattr(channel, "set_message_handler"):
                 channel.set_message_handler(handler)
         logger.debug(f"Set message handler on {len(self._channels)} channels")
+
+    async def start_all(self) -> None:
+        """Start all configured channel accounts.
+
+        Iterates through channels and starts any accounts that have been
+        configured via configure_account().
+        """
+        for channel in self._channels.values():
+            # Get configured accounts from channel's internal state
+            accounts = getattr(channel, "_accounts", {})
+            for account_id, account_info in accounts.items():
+                # Skip if already running
+                if account_info.get("running"):
+                    continue
+                try:
+                    await channel.start(account_id)
+                    logger.info(f"Started {channel.id}:{account_id}")
+                except Exception as e:
+                    logger.warning(f"Failed to start {channel.id}:{account_id}: {e}")
+
+    async def stop_all(self) -> None:
+        """Stop all running channel accounts.
+
+        Iterates through channels and stops any accounts that are running.
+        """
+        for channel in self._channels.values():
+            # Get configured accounts from channel's internal state
+            accounts = getattr(channel, "_accounts", {})
+            for account_id, account_info in accounts.items():
+                # Skip if not running
+                if not account_info.get("running"):
+                    continue
+                try:
+                    await channel.stop(account_id)
+                    logger.info(f"Stopped {channel.id}:{account_id}")
+                except Exception as e:
+                    logger.warning(f"Failed to stop {channel.id}:{account_id}: {e}")

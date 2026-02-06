@@ -8,7 +8,7 @@ from typing import Literal
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
-from openfang.gateway.deps import GatewayDep
+from openfang.gateway.deps import DepsDep
 from openfang.settings import settings
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
@@ -55,7 +55,7 @@ def validate_token(token: str | None) -> None:
 @router.post("/wake", response_model=WebhookResponse)
 async def webhook_wake(
     payload: WakePayload,
-    gateway: GatewayDep,
+    deps: DepsDep,
     x_openfang_token: str | None = Header(default=None),
 ) -> WebhookResponse:
     """Trigger a wake event.
@@ -78,7 +78,7 @@ async def webhook_wake(
 @router.post("/agent", response_model=WebhookResponse, status_code=202)
 async def webhook_agent(
     payload: AgentPayload,
-    gateway: GatewayDep,
+    deps: DepsDep,
     x_openfang_token: str | None = Header(default=None),
 ) -> WebhookResponse:
     """Run an agent turn from webhook.
@@ -95,7 +95,7 @@ async def webhook_agent(
 
     # Run agent (for now, synchronously - could be background task)
     try:
-        _response = await chat(gateway.deps, payload.message)  # noqa: F841
+        _response = await chat(deps, payload.message)  # noqa: F841
 
         # If channel and recipient specified, send the response
         if payload.channel and payload.to:
