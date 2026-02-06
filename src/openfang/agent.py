@@ -6,6 +6,7 @@ from pydantic_ai import Agent, RunContext, ToolDefinition
 
 from .deps import Deps
 from .models import Role
+from .settings import settings
 from .tools import ALL_TOOLS
 
 # =============================================================================
@@ -69,12 +70,19 @@ async def filter_tools_by_permission(ctx: RunContext[Deps], tool_defs: list[Tool
 
 
 def create_agent(
-    model: str = "openai:gpt-4o",
+    model: str | None = None,
     system_prompt: str = "You are a helpful assistant. Be concise.",
 ) -> Agent[Deps, str]:
-    """Create a configured agent with all tools registered."""
+    """Create a configured agent with all tools registered.
+
+    Args:
+        model: Model string (e.g. 'openai:gpt-4o'). If None, uses settings.get_model()
+               which auto-prefixes with 'gateway/' if PYDANTIC_AI_GATEWAY_API_KEY is set.
+        system_prompt: Base system prompt for the agent.
+    """
+    effective_model = model or settings.get_model()
     agent: Agent[Deps, str] = Agent(
-        model,
+        effective_model,
         deps_type=Deps,
         system_prompt=system_prompt,
         prepare_tools=filter_tools_by_permission,

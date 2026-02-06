@@ -299,8 +299,19 @@ def skills():
 @cli.command()
 def config():
     """Show current configuration."""
+    import os
+
     click.echo("OpenFang Configuration")
     click.echo("=" * 40)
+
+    # Model
+    effective_model = settings.get_model()
+    gateway_key = os.environ.get("PYDANTIC_AI_GATEWAY_API_KEY")
+    if gateway_key:
+        click.echo(f"Model: {effective_model} (via Pydantic AI Gateway)")
+    else:
+        click.echo(f"Model: {effective_model}")
+
     click.echo(f"Host: {settings.host}")
     click.echo(f"Port: {settings.port}")
     click.echo(f"Heartbeat: {'enabled' if settings.heartbeat_enabled else 'disabled'} ({settings.heartbeat_interval}s)")
@@ -311,10 +322,11 @@ def config():
     click.echo(f"  Discord: {'✓ configured' if settings.discord_bot_token else '✗ not set'}")
     click.echo()
     click.echo("Environment variables:")
-    click.echo("  OPENFANG_HOST, OPENFANG_PORT")
+    click.echo("  OPENFANG_MODEL                    # Model string (default: openai:gpt-4o)")
+    click.echo("  PYDANTIC_AI_GATEWAY_API_KEY       # Auto-routes via gateway if set")
+    click.echo("  OPENAI_API_KEY or ANTHROPIC_API_KEY")
     click.echo("  OPENFANG_TELEGRAM_BOT_TOKEN")
     click.echo("  OPENFANG_DISCORD_BOT_TOKEN")
-    click.echo("  OPENAI_API_KEY or ANTHROPIC_API_KEY")
 
 
 def main():

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import logging
 import os
 import shutil
@@ -104,6 +105,17 @@ class SkillRegistry:
         # Any binaries (at least one must exist)
         if reqs.any_bins and not any(shutil.which(b) for b in reqs.any_bins):
             logger.debug(f"Skill {skill.name}: no binary in {reqs.any_bins}")
+            return False
+
+        # Required Python modules (all must be importable)
+        for module_name in reqs.modules:
+            if not importlib.util.find_spec(module_name):
+                logger.debug(f"Skill {skill.name}: missing module {module_name}")
+                return False
+
+        # Any modules (at least one must be importable)
+        if reqs.any_modules and not any(importlib.util.find_spec(m) for m in reqs.any_modules):
+            logger.debug(f"Skill {skill.name}: no module in {reqs.any_modules}")
             return False
 
         # Environment variables

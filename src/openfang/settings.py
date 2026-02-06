@@ -1,5 +1,7 @@
 """Centralized settings using pydantic-settings."""
 
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,9 +19,14 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Gateway
+    # Gateway server
     host: str = "127.0.0.1"
     port: int = 18789
+
+    # LLM Model configuration
+    model: str = "openai:gpt-4o"
+    """Model string (e.g. 'openai:gpt-4o', 'anthropic:claude-sonnet-4-20250514').
+    If PYDANTIC_AI_GATEWAY_API_KEY is set, automatically prefixes with 'gateway/'."""
 
     # Heartbeat
     heartbeat_enabled: bool = True
@@ -32,6 +39,16 @@ class Settings(BaseSettings):
     # Channel tokens (optional - auto-configure channels if set)
     telegram_bot_token: str | None = None
     discord_bot_token: str | None = None
+
+    def get_model(self) -> str:
+        """Get the effective model string, with gateway prefix if configured."""
+        model = self.model
+
+        # If gateway key is set and model doesn't already have gateway prefix, add it
+        if os.environ.get("PYDANTIC_AI_GATEWAY_API_KEY") and not model.startswith("gateway/"):
+            return f"gateway/{model}"
+
+        return model
 
 
 # Singleton instance

@@ -17,6 +17,12 @@ class SkillRequirements(BaseModel):
     any_bins: list[str] = Field(default_factory=list, alias="anyBins")
     """At least one of these binaries must be available."""
 
+    modules: list[str] = Field(default_factory=list)
+    """Python modules that must all be importable."""
+
+    any_modules: list[str] = Field(default_factory=list, alias="anyModules")
+    """At least one of these Python modules must be importable."""
+
     env: list[str] = Field(default_factory=list)
     """Environment variables that must be set."""
 
