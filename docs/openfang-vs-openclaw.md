@@ -8,7 +8,7 @@ This document compares OpenFang's implementation to OpenClaw (the reference impl
 
 | Method | OpenClaw | OpenFang |
 |--------|----------|----------|
-| **One-liner** | `curl -fsSL https://openclaw.ai/install.sh \| bash` | `curl -fsSL https://openfang.ai/install.sh \| bash` |
+| **One-liner** | `curl -fsSL https://openclaw.ai/install.sh \| bash` | `curl -fsSL https://raw.githubusercontent.com/aidiss/openfang/main/install.sh \| bash` |
 | **Package manager** | `npm i -g openclaw` | `uvx openfang` (PyPI coming soon) |
 | **Hackable** | `--install-method git` | `git clone` + `uv sync` |
 | **Runtime** | Node.js (installs for you) | Python 3.13+ (uv installs for you) |

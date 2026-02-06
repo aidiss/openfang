@@ -8,7 +8,7 @@ Goal: go from **zero** → **first working chat** in under 5 minutes.
 
     ```bash
     # Works everywhere. Installs uv if needed. 🐍
-    curl -fsSL https://openfang.ai/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/aidiss/openfang/main/install.sh | bash
     ```
 
     This installs to `~/openfang` and adds `openfang` to your PATH:
@@ -21,7 +21,7 @@ Goal: go from **zero** → **first working chat** in under 5 minutes.
     Customize install location with `OPENFANG_DIR`:
 
     ```bash
-    curl -fsSL https://openfang.ai/install.sh | OPENFANG_DIR=~/my-agent bash
+    curl -fsSL https://raw.githubusercontent.com/aidiss/openfang/main/install.sh | OPENFANG_DIR=~/my-agent bash
     ```
 
 === "uvx"

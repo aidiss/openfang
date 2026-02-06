@@ -23,7 +23,7 @@ Run it locally. Own your data. Extend it freely.
 
     ```bash
     # Works everywhere. Installs uv if needed. 🐍
-    curl -fsSL https://openfang.ai/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/aidiss/openfang/main/install.sh | bash
     ```
 
     Then just:
