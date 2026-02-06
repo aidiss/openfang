@@ -10,6 +10,7 @@ from .heartbeat import router as heartbeat_router
 from .memory import router as memory_router
 from .projects import router as projects_router
 from .skills import router as skills_router
+from .webhooks import router as webhooks_router
 
 __all__ = [
     "channels_router",
@@ -22,4 +23,5 @@ __all__ = [
     "memory_router",
     "projects_router",
     "skills_router",
+    "webhooks_router",
 ]

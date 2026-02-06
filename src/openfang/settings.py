@@ -40,6 +40,16 @@ class Settings(BaseSettings):
     telegram_bot_token: str | None = None
     discord_bot_token: str | None = None
 
+    # Webhooks
+    webhooks_enabled: bool = False
+    webhooks_token: str | None = None
+    """Token required for webhook authentication. Set to enable webhooks."""
+
+    # CLI user identity (optional)
+    user_email: str = "cli@local"
+    user_phone: str | None = None
+    user_telegram: str | None = None
+
     def get_model(self) -> str:
         """Get the effective model string, with gateway prefix if configured."""
         model = self.model

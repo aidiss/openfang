@@ -103,4 +103,4 @@ class Channel(Protocol):
     ) -> None: ...
 ```
 
-See [TelegramChannel](https://github.com/aidiss/openfang/blob/main/src/openfang/adapters/channels/telegram.py) for a reference implementation.
+See [TelegramChannel](https://github.com/aidiss/openfang/blob/main/src/openfang/channels/telegram.py) for a reference implementation.

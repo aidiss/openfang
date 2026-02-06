@@ -19,16 +19,33 @@ Run it locally. Own your data. Extend it freely.
 
 ## Quick Start
 
-```bash
-# Install with uv
-uv sync
+=== "One-liner"
 
-# Start the gateway
-uv run openfang gateway
+    ```bash
+    # Works everywhere. Installs uv if needed. 🐍
+    curl -fsSL https://openfang.ai/install.sh | bash
+    ```
 
-# Or chat directly in terminal
-uv run openfang chat
-```
+    Then just:
+
+    ```bash
+    openfang chat
+    ```
+
+=== "uvx"
+
+    ```bash
+    # Try without installing (PyPI coming soon)
+    uvx openfang chat
+    ```
+
+=== "Hackable"
+
+    ```bash
+    git clone https://github.com/aidiss/openfang.git
+    cd openfang && uv sync
+    uv run openfang chat   # Use uv run in dev mode
+    ```
 
 The gateway runs at [localhost:18789](http://localhost:18789) with a web UI for chat, sessions, and configuration.
 
@@ -105,11 +122,13 @@ OPENFANG_PORT=18789
 
 ```
 src/openfang/
-├── adapters/          # Implementations
-│   ├── channels/      # Telegram, Discord, ...
-│   └── skills/        # Markdown skill definitions
+├── agents/            # Top-level agent personas (YAML)
+├── capabilities/      # Adapter implementations
+├── channels/          # Telegram, Discord, ...
 ├── gateway/           # FastAPI server + web UI
-├── routing/           # Message dispatcher
+├── messaging/         # Message dispatcher + resolver
+├── skills/            # Markdown skill definitions
+├── subagents/         # Specialized task delegation
 ├── protocols.py       # Port interfaces (hexagonal)
 ├── deps.py            # Dependency injection
 ├── agent.py           # pydantic-ai agent factory
@@ -125,14 +144,7 @@ Built on:
 
 ## Why OpenFang?
 
-OpenClaw is incredible — 314K lines of TypeScript, 50+ skills, native apps for every platform. But sometimes you want:
-
-- **Simpler**: ~5K lines, pure Python, easy to understand
-- **Hackable**: Fork it, extend it, make it yours
-- **Lightweight**: No native apps, no complex build system
-- **Pythonic**: If you think in Python, you'll feel at home
-
-OpenFang is OpenClaw's little sibling. Same spirit, smaller footprint.
+OpenFang is OpenClaw's little sibling — same spirit, smaller footprint (~5K lines vs 314K). See [README](https://github.com/aidiss/openfang#design-philosophy) for design philosophy and principles.
 
 ## Next Steps
 

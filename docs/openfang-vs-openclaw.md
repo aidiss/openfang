@@ -4,6 +4,77 @@ This document compares OpenFang's implementation to OpenClaw (the reference impl
 
 ---
 
+## Installation
+
+| Method | OpenClaw | OpenFang |
+|--------|----------|----------|
+| **One-liner** | `curl -fsSL https://openclaw.ai/install.sh \| bash` | `curl -fsSL https://openfang.ai/install.sh \| bash` |
+| **Package manager** | `npm i -g openclaw` | `uvx openfang` (PyPI coming soon) |
+| **Hackable** | `--install-method git` | `git clone` + `uv sync` |
+| **Runtime** | Node.js (installs for you) | Python 3.13+ (uv installs for you) |
+
+---
+
+## CLI Commands
+
+| Category | OpenClaw | OpenFang | Notes |
+|----------|----------|----------|-------|
+| **Setup** | `onboard`, `setup`, `configure`, `doctor` | `onboard`, `doctor` | Both have interactive setup |
+| **Gateway** | `gateway`, `daemon`, `dashboard` | `gateway` | Same concept, simpler |
+| **Chat** | `agent --message "..."` | `chat`, `run "..."` | OpenFang has interactive mode |
+| **Health** | `health`, `status`, `doctor` | `health`, `status`, `doctor` | Same |
+| **Config** | `config`, `configure`, `reset` | `config` | OpenFang: env vars only |
+| **Skills** | `skills` | `skills` | Same |
+| **Channels** | `channels`, `pairing`, `devices` | `telegram` | OpenFang: per-channel runners |
+| **Messaging** | `message send/broadcast/poll/react/...` | `message send` | OpenFang: basic send |
+| **Agents** | `agents list/add/delete/set-identity` | - | OpenFang: YAML files |
+| **Sessions** | `sessions` | - | OpenFang: via gateway API |
+| **Memory** | `memory status` | - | OpenFang: via gateway API |
+| **Cron** | `cron` | `cron` | Same |
+| **Browser** | `browser` | - | OpenFang: via tools only |
+| **Webhooks** | `webhooks` | `/webhooks/*` endpoints | OpenFang: via HTTP API |
+| **Advanced** | `acp`, `nodes`, `sandbox`, `tui`, `hooks`, `plugins`, `security`, `dns` | - | Not yet needed |
+
+### OpenClaw CLI (~40+ commands)
+
+```bash
+openclaw onboard              # Interactive setup wizard
+openclaw gateway              # Start gateway
+openclaw agent --message "x"  # Single prompt
+openclaw status --all         # Full status
+openclaw doctor               # Health checks + fixes
+openclaw message send --to +1234567890 --message "Hi"
+openclaw agents list          # List configured agents
+openclaw channels status      # Channel health
+openclaw tui                  # Terminal UI
+```
+
+### OpenFang CLI (12 commands)
+
+```bash
+openfang onboard              # Interactive setup wizard
+openfang doctor               # Health checks + diagnostics
+openfang chat                 # Interactive chat
+openfang run "prompt"         # Single prompt
+openfang gateway              # Start gateway + web UI
+openfang telegram             # Run Telegram bot
+openfang cron                 # Run cron checker
+openfang health               # Check gateway
+openfang status               # Full status
+openfang skills               # List skills
+openfang config               # Show config
+openfang message send "Hi" --to user --channel telegram
+```
+
+**Still simpler because:**
+
+1. **Web UI first**: Most management via gateway dashboard, not CLI
+2. **Env vars over wizards**: Configure via `.env`, `onboard` is optional
+3. **YAML over CLI**: Agent configs are files, not `agents add` commands
+4. **API over CLI**: Sessions, memory via REST API + webhooks
+
+---
+
 ## Fundamental Differences
 
 | Aspect | OpenClaw | OpenFang | Why Different |
@@ -142,7 +213,9 @@ src/openfang/
 ├── subagents/             # Task delegation
 ├── channels/              # Messaging platforms
 ├── skills/                # Capability extensions
-└── routing/               # Message routing
+├── messaging/             # Message routing
+├── gateway/               # FastAPI + web UI
+└── runners/               # CLI entry points
 ```
 
 ```
@@ -163,6 +236,49 @@ src/openfang/
    │ Memory  ││Browser││Projects ││       ││  Skills   │
    └─────────┘└───────┘└─────────┘└───────┘└───────────┘
 ```
+
+---
+
+## Capabilities
+
+| Capability | OpenClaw | OpenFang | Status |
+|------------|----------|----------|--------|
+| **Chat** | CLI + Web | CLI + Web | :material-check: Same |
+| **Multi-agent** | Yes (workspaces) | Yes (YAML configs) | :material-check: Same |
+| **Tools** | ~50+ | ~40 | :material-check: Core set |
+| **Skills (Markdown)** | Yes | Yes | :material-check: Same |
+| **Subagents** | Async (fire & announce) | Sync (inline) | :material-alert: Different |
+| **Memory** | File + semantic search | Key-value | :material-clock: Simpler |
+| **Telegram** | Yes | Yes | :material-check: Same |
+| **Discord** | Yes | Yes | :material-check: Same |
+| **WhatsApp** | Yes | Planned | :material-clock: Planned |
+| **Slack** | Yes | Planned | :material-clock: Planned |
+| **Signal** | Yes | Planned | :material-clock: Planned |
+| **Cron/Scheduling** | Yes | Yes | :material-check: Same |
+| **Web browsing** | Playwright | Playwright | :material-check: Same |
+| **File operations** | Yes | Yes | :material-check: Same |
+| **Shell/Terminal** | Yes | Yes | :material-check: Same |
+| **Heartbeat** | Yes | Basic | :material-clock: Simpler |
+| **Device pairing** | Yes | No | :material-close: Not planned |
+| **Plugins** | Yes | No | :material-close: Not planned |
+| **Webhooks** | Yes | Yes | :material-check: Same |
+| **Terminal UI (TUI)** | Yes | No | :material-close: Web UI instead |
+| **Approvals** | Yes | No | :material-clock: Planned |
+| **Sandbox** | Yes | No | :material-close: Not planned |
+
+### Tool Categories
+
+| Category | OpenClaw Tools | OpenFang Tools |
+|----------|----------------|----------------|
+| **Files** | read, write, edit, glob, grep | file_read, file_write, file_edit, file_list, file_search |
+| **Shell** | exec, run | shell_exec |
+| **Web** | fetch, browse, screenshot | web_fetch, web_browse, web_screenshot |
+| **Memory** | remember, recall, forget | memory_set, memory_get, memory_list, memory_delete |
+| **Cron** | schedule, list, cancel | cron_add, cron_list, cron_remove |
+| **Projects** | git, npm, etc. | project_list, project_switch |
+| **Subagents** | sessions_spawn | subagent_delegate |
+| **Skills** | use_skill | skill_use |
+| **Channels** | send_message | channel_send |
 
 ---
 

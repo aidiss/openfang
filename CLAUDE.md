@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **OpenFang** - Lightweight AI agent gateway inspired by OpenClaw. Python 3.13+, Pydantic ecosystem.
 
+See [README.md](README.md) for design philosophy and principles.
+
 ## Commands
 
 ```bash
@@ -25,7 +27,7 @@ uv run mkdocs serve                        # Docs preview
 ### Hexagonal (Ports & Adapters)
 
 - **Ports** ([protocols.py](src/openfang/protocols.py)): Protocol interfaces define contracts (`Files`, `Web`, `Memory`, `Shell`, `Channels`, `Skills`, etc.)
-- **Adapters** ([adapters/](src/openfang/adapters/)): Concrete implementations (`LocalFiles`, `PlaywrightWeb`, `InMemoryMemory`, `TelegramChannel`, etc.)
+- **Adapters** ([capabilities/](src/openfang/capabilities/)): Concrete implementations (`LocalFiles`, `PlaywrightWeb`, `InMemoryMemory`, etc.)
 - **Deps** ([deps.py](src/openfang/deps.py)): Dependency container bundles all adapters + user context, passed to agent
 
 ### Agent & Tools
@@ -34,11 +36,16 @@ uv run mkdocs serve                        # Docs preview
 - **Tool Permissions**: `TOOL_PERMISSIONS` dict maps tool names to required roles (`admin`, `developer`, or `None` for all users)
 - **Tools** ([tools.py](src/openfang/tools.py)): All tool functions in `ALL_TOOLS` list; use `@tool_errors` decorator for consistent error handling
 
+### Agents & Subagents
+
+- **Agents** ([agents/](src/openfang/agents/)): Top-level agent personas defined in YAML (identity, tool policies, skill allowlists)
+- **Subagents** ([subagents/](src/openfang/subagents/)): Specialized task delegation (code_analyzer, web_researcher, summarizer)
+
 ### Message Routing
 
-- **Dispatcher** ([routing/dispatcher.py](src/openfang/routing/dispatcher.py)): Central router - receives channel messages, runs agent, sends responses
-- **Resolver** ([routing/resolver.py](src/openfang/routing/resolver.py)): Maps inbound messages to session keys: `{channel}:{account}:{peer_kind}:{peer_id}`
-- **Channels** ([adapters/channels/](src/openfang/adapters/channels/)): Platform connectors (Telegram, Discord implemented; others stubbed)
+- **Dispatcher** ([messaging/dispatcher.py](src/openfang/messaging/dispatcher.py)): Central router - receives channel messages, runs agent, sends responses
+- **Resolver** ([messaging/resolver.py](src/openfang/messaging/resolver.py)): Maps inbound messages to session keys: `{channel}:{account}:{peer_kind}:{peer_id}`
+- **Channels** ([channels/](src/openfang/channels/)): Platform connectors (Telegram, Discord implemented; others stubbed)
 
 ### Testing Philosophy
 

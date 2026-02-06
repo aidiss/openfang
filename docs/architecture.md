@@ -22,11 +22,11 @@ OpenFang follows **hexagonal architecture** (ports and adapters) to keep the cor
 │                    │   Agent   │  ← pydantic-ai             │
 │                    └─────┬─────┘                            │
 │                          │                                   │
-│         ┌────────────────┼────────────────┐                 │
-│         │                │                │                 │
-│    ┌────▼────┐    ┌─────▼─────┐   ┌─────▼─────┐           │
-│    │  Tools  │    │   Skills  │   │  Memory   │           │
-│    └─────────┘    └───────────┘   └───────────┘           │
+│    ┌─────────────────────┼─────────────────────┐           │
+│    │          │          │          │          │           │
+│ ┌──▼──┐  ┌───▼───┐  ┌───▼───┐  ┌───▼───┐  ┌───▼────┐     │
+│ │Tools│  │Skills │  │Memory │  │Agents │  │Subagents│     │
+│ └─────┘  └───────┘  └───────┘  └───────┘  └────────┘     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -41,7 +41,7 @@ FastAPI server that handles:
 - **Web UI** — HTMX + Alpine.js dashboard
 - **Channel integration** — Receives messages from Telegram/Discord
 
-### Dispatcher (`routing/dispatcher.py`)
+### Dispatcher (`messaging/dispatcher.py`)
 
 Central message router:
 
@@ -92,7 +92,7 @@ class Memory(Protocol):
     async def forget(self, fact_id: str) -> None: ...
 ```
 
-### Adapters (`adapters/`)
+### Adapters (`capabilities/`)
 
 Concrete implementations:
 
@@ -105,6 +105,25 @@ Concrete implementations:
 | `Conversations` | `InMemoryConversations` | Chat history |
 | `Channel` | `TelegramChannel` | Telegram Bot API |
 | `Channel` | `DiscordChannel` | Discord bot |
+
+## Agents & Subagents
+
+### Top-Level Agents (`agents/`)
+
+Agent personas defined in YAML with:
+- **Identity** — name, emoji
+- **Tool policies** — allow/deny lists
+- **Skill allowlists** — which skills are available
+- **Subagent permissions** — which subagents can be spawned
+
+### Subagents (`subagents/`)
+
+Specialized task delegation system:
+- **code_analyzer** — Code review and analysis
+- **web_researcher** — Web research tasks
+- **summarizer** — Content summarization
+
+Subagents run with limited tools and return results inline to the parent agent.
 
 ## Message Flow
 
@@ -169,4 +188,6 @@ This makes tests fast, deterministic, and realistic.
 | [`deps.py`](https://github.com/aidiss/openfang/blob/main/src/openfang/deps.py) | DI container |
 | [`tools.py`](https://github.com/aidiss/openfang/blob/main/src/openfang/tools.py) | ~40 agent tools |
 | [`agent.py`](https://github.com/aidiss/openfang/blob/main/src/openfang/agent.py) | Agent factory + permissions |
-| [`routing/dispatcher.py`](https://github.com/aidiss/openfang/blob/main/src/openfang/routing/dispatcher.py) | Message routing |
+| [`messaging/dispatcher.py`](https://github.com/aidiss/openfang/blob/main/src/openfang/messaging/dispatcher.py) | Message routing |
+| [`agents/`](https://github.com/aidiss/openfang/blob/main/src/openfang/agents/) | Top-level agent configs |
+| [`subagents/`](https://github.com/aidiss/openfang/blob/main/src/openfang/subagents/) | Task delegation system |

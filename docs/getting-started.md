@@ -2,25 +2,70 @@
 
 Goal: go from **zero** → **first working chat** in under 5 minutes.
 
+## Installation
+
+=== "One-liner"
+
+    ```bash
+    # Works everywhere. Installs uv if needed. 🐍
+    curl -fsSL https://openfang.ai/install.sh | bash
+    ```
+
+    This installs to `~/openfang` and adds `openfang` to your PATH:
+
+    ```bash
+    openfang chat      # Just works
+    openfang gateway   # Web UI at localhost:18789
+    ```
+
+    Customize install location with `OPENFANG_DIR`:
+
+    ```bash
+    curl -fsSL https://openfang.ai/install.sh | OPENFANG_DIR=~/my-agent bash
+    ```
+
+=== "uvx"
+
+    ```bash
+    # Try it without installing (requires uv)
+    uvx openfang chat
+    ```
+
+    Or install permanently:
+
+    ```bash
+    uv tool install openfang
+    openfang chat
+    ```
+
+    !!! warning "Coming Soon"
+        PyPI publishing is in progress. Use the one-liner or hackable method for now.
+
+=== "Hackable"
+
+    ```bash
+    # Clone and own it
+    git clone https://github.com/aidiss/openfang.git
+    cd openfang
+    uv sync
+    ```
+
+    In dev mode, use `uv run`:
+
+    ```bash
+    uv run openfang chat
+    ```
+
+    This is the recommended method if you want to modify the code or contribute.
+
 ## Prerequisites
 
-- **Python 3.13+**
-- **uv** (recommended) or pip
+- **Python 3.13+** (the one-liner handles this)
 - An LLM API key (OpenAI or Anthropic)
 
-## 1) Clone and Install
+## Configure Environment
 
-```bash
-git clone https://github.com/aidiss/openfang.git
-cd openfang
-
-# Install dependencies
-uv sync
-```
-
-## 2) Configure Environment
-
-Create a `.env` file:
+Create a `.env` file (or edit the one created by the installer):
 
 ```bash
 # Required: LLM provider (pick one)
@@ -32,7 +77,7 @@ OPENFANG_TELEGRAM_BOT_TOKEN=123456:ABC...
 OPENFANG_DISCORD_BOT_TOKEN=...
 ```
 
-## 3) Start the Gateway
+## Start the Gateway
 
 ```bash
 uv run openfang gateway
@@ -46,7 +91,7 @@ Open [localhost:18789](http://localhost:18789) in your browser. You'll see the d
 - **Skills** — Available agent capabilities
 - **Memory** — Persistent facts the agent remembers
 
-## 4) Send Your First Message
+## Send Your First Message
 
 Type in the chat input:
 

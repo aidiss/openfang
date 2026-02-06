@@ -19,6 +19,7 @@ from .routes import (
     memory_router,
     projects_router,
     skills_router,
+    webhooks_router,
 )
 
 if TYPE_CHECKING:
@@ -81,6 +82,7 @@ app.include_router(projects_router)
 app.include_router(skills_router)
 app.include_router(channels_router)
 app.include_router(events_router)
+app.include_router(webhooks_router)
 
 
 # =============================================================================
