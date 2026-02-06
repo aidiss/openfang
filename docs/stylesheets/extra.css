@@ -1,27 +1,22 @@
-/* OpenFang custom styles - Python themed */
+/* OpenFang custom styles - Snake themed */
 
 :root {
-  --md-primary-fg-color: #306998;        /* Python blue */
-  --md-primary-fg-color--light: #4B8BBE; /* Python blue light */
-  --md-primary-fg-color--dark: #1e4a6e;  /* Python blue dark */
-  --md-accent-fg-color: #FFD43B;         /* Python yellow */
+  --md-primary-fg-color: #4CAF50;        /* Green */
+  --md-primary-fg-color--light: #81C784; /* Light green */
+  --md-primary-fg-color--dark: #2E7D32;  /* Dark green */
+  --md-accent-fg-color: #8BC34A;         /* Lime green */
 }
 
 /* Dark mode adjustments */
 [data-md-color-scheme="slate"] {
-  --md-default-bg-color: #0d1117;        /* Dark blue-black */
+  --md-default-bg-color: #0d1117;
   --md-default-fg-color: #e6edf3;
   --md-code-bg-color: #161b22;
 }
 
-/* Hero section on home */
+/* Hide first h1 since we have logo image */
 .md-content__inner > h1:first-child {
-  font-size: 2.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #4B8BBE 0%, #FFD43B 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  display: none;
 }
 
 /* Code blocks */

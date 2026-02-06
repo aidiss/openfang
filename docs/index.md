@@ -1,4 +1,6 @@
-# OpenFang
+<p align="center">
+  <img src="assets/logo-full.jpg" alt="OpenFang" width="400">
+</p>
 
 <p align="center" style="font-size: 1.4em; color: #4B8BBE;">
   <strong>Your AI assistant, wherever you chat</strong>

@@ -7,15 +7,15 @@ theme:
   palette:
     # Dark mode
     - scheme: slate
-      primary: indigo
-      accent: yellow
+      primary: green
+      accent: lime
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
     # Light mode
     - scheme: default
-      primary: indigo
-      accent: yellow
+      primary: green
+      accent: lime
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -31,8 +31,8 @@ theme:
     - content.code.annotate
   icon:
     repo: fontawesome/brands/github
-  logo: assets/logo.svg
-  favicon: assets/logo.svg
+  logo: assets/mascot-white.jpg
+  favicon: assets/mascot-white.jpg
 
 extra_css:
   - stylesheets/extra.css
