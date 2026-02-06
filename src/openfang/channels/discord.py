@@ -199,7 +199,7 @@ class DiscordChannel:
                     await channel.send(text)
                     account["last_outbound_at"] = datetime.now()
                     return True
-                except Exception:
+                except Exception:  # nosec B110 - fallback to try user DM
                     pass
 
                 try:
@@ -208,7 +208,7 @@ class DiscordChannel:
                     await dm.send(text)
                     account["last_outbound_at"] = datetime.now()
                     return True
-                except Exception:
+                except Exception:  # nosec B110 - fallback, error handled after
                     pass
 
                 account["last_error"] = f"Could not find channel/user: {target}"

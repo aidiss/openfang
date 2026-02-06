@@ -97,7 +97,7 @@ class WorkspaceAdapters:
 
     @classmethod
     def default(cls, root: Path) -> WorkspaceAdapters:
-        return cls(shell=LocalShell(root), projects=LocalProjects())
+        return cls(shell=LocalShell(root), projects=LocalProjects())  # nosec B604
 
 
 @dataclass
@@ -176,7 +176,7 @@ class Deps:
             conversations=self.storage.conversations,
         )
         self.workspace = WorkspaceAdapters(
-            shell=LocalShell(path),
+            shell=LocalShell(path),  # nosec B604
             projects=self.workspace.projects,
         )
 

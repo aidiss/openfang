@@ -24,8 +24,8 @@ Manage Trello boards, lists, and cards via the REST API.
 3. Set environment variables:
 
 ```bash
-export TRELLO_API_KEY="your-api-key"
-export TRELLO_TOKEN="your-token"
+export TRELLO_API_KEY="your-api-key"  # pragma: allowlist secret
+export TRELLO_TOKEN="your-token"  # pragma: allowlist secret
 ```
 
 ## Boards

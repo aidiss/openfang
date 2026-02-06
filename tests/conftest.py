@@ -10,24 +10,24 @@ from __future__ import annotations
 # Fail-safe: block accidental real LLM calls during tests
 from pydantic_ai import models
 
-models.ALLOW_MODEL_REQUESTS = False
+models.ALLOW_MODEL_REQUESTS = False  # type: ignore[assignment]
 
-from dataclasses import dataclass, field
-from pathlib import Path  # noqa: TC003 - needed at runtime for type hints
-from typing import TYPE_CHECKING
-from unittest.mock import MagicMock
+from dataclasses import dataclass, field  # noqa: E402
+from pathlib import Path  # noqa: E402, TC003 - needed at runtime for type hints
+from typing import TYPE_CHECKING  # noqa: E402
+from unittest.mock import MagicMock  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
-from openfang.capabilities import (
+from openfang.capabilities import (  # noqa: E402
     InMemoryConversations,
     InMemoryCron,
     InMemoryMemory,
     LocalFiles,
 )
-from openfang.channels.models import ChannelAccount, ChannelInfo, ChannelStatus
-from openfang.models import User
-from openfang.types import Page, Result
+from openfang.channels.models import ChannelAccount, ChannelInfo, ChannelStatus  # noqa: E402
+from openfang.models import User  # noqa: E402
+from openfang.types import Page, Result  # noqa: E402
 
 if TYPE_CHECKING:
     from openfang.protocols import WebSession
@@ -147,8 +147,8 @@ class FakeProjects:
         self._current = project_id
         return self._projects[project_id]
 
-    async def list(self) -> list[str]:
-        return list(self._projects.keys())
+    async def list(self) -> "list[str]":  # noqa: A003 - protocol method name
+        return [*self._projects.keys()]
 
     async def register(self, project_id: str, path: Path) -> None:
         self._projects[project_id] = path

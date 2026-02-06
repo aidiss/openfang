@@ -125,7 +125,7 @@ class TelegramChannel:
                     await app.updater.stop()
                     await app.stop()
                     await app.shutdown()
-                except Exception:
+                except Exception:  # nosec B110 - cleanup, ok to ignore errors
                     pass
 
         account["running"] = True

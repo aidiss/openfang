@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-import subprocess
+import subprocess  # nosec B404 - subprocess is required for shell execution
 from pathlib import Path
 
 from ..types import Result

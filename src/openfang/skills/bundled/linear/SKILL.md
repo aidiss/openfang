@@ -24,7 +24,7 @@ Manage issues, projects, and cycles via Linear's GraphQL API.
 3. Set environment variable:
 
 ```bash
-export LINEAR_API_KEY="lin_api_..."
+export LINEAR_API_KEY="lin_api_..."  # pragma: allowlist secret
 ```
 
 ## Query Helper

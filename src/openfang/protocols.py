@@ -214,6 +214,11 @@ class Cron(Protocol):
 class Skills(Protocol):
     """Skill registry and discovery."""
 
+    @property
+    def skills(self) -> dict[str, Skill]:
+        """All registered skills."""
+        ...
+
     def get(self, name: str) -> Skill | None:
         """Get a skill by name, or None if not found."""
         ...

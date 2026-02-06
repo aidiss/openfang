@@ -21,17 +21,19 @@ async def channels_list(request: Request, channels_data: ChannelsDataDep):
 async def channel_add_account(request: Request, channel_id: str, gateway: GatewayDep):
     """Add an account to a channel."""
     form = await request.form()
-    account_id = form.get("id", "").strip()
-    token = form.get("token", "").strip()
-    name = form.get("name", "").strip() or None
+    account_id = str(form.get("id", "")).strip()
+    token = str(form.get("token", "")).strip()
+    name = str(form.get("name", "")).strip() or None
 
     if not account_id or not token:
         return htmx_error(request, "ID and token required")
 
     # Configure the channel implementation
     channel = gateway.deps.comms.channels.get_channel(channel_id)
-    if channel and hasattr(channel, "configure_account"):
-        channel.configure_account(account_id, token, name)
+    if channel:
+        configure = getattr(channel, "configure_account", None)
+        if configure:
+            configure(account_id, token, name)
 
     # Add to registry
     account = ChannelAccount(
@@ -55,8 +57,10 @@ async def channel_remove_account(request: Request, channel_id: str, account_id: 
 
     # Also remove from channel implementation
     channel = gateway.deps.comms.channels.get_channel(channel_id)
-    if channel and hasattr(channel, "remove_account"):
-        channel.remove_account(account_id)
+    if channel:
+        remove = getattr(channel, "remove_account", None)
+        if remove:
+            remove(account_id)
 
     if is_htmx(request):
         cdata = await get_channels_data(gateway)

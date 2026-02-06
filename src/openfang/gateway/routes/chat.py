@@ -24,10 +24,10 @@ async def chat(request: Request, gateway: GatewayDep):
 
     if htmx:
         form = await request.form()
-        user_message = form.get("message", "")
+        user_message = str(form.get("message", ""))
     else:
         body = await request.json()
-        user_message = body.get("message", "")
+        user_message = str(body.get("message", ""))
 
     if not user_message:
         return {"error": "No message provided"}

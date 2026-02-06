@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 
 from openfang.capabilities import InMemoryConversations
@@ -34,7 +34,7 @@ def cron_matches(schedule: str, dt: datetime) -> bool:
 async def run_cron_checker(
     cron: Cron,
     check_interval: int = 60,
-    on_job: Callable[[CronJob], None] | None = None,
+    on_job: Callable[[CronJob], Awaitable[None]] | None = None,
 ):
     """
     Background cron job checker.

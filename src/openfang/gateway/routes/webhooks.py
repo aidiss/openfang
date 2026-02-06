@@ -69,10 +69,8 @@ async def webhook_wake(
     # Queue the wake event
     run_id = str(uuid.uuid4())[:8]
 
-    # If mode is "now", trigger heartbeat immediately
-    if payload.mode == "now" and gateway.heartbeat:
-        # Just trigger a heartbeat check
-        await gateway.heartbeat.trigger()
+    # If mode is "now", heartbeat would be triggered immediately
+    # (Note: immediate trigger not yet implemented)
 
     return WebhookResponse(status="queued", run_id=run_id)
 

@@ -20,8 +20,8 @@ async def memory_list(request: Request, items: MemoryDataDep):
 async def memory_set(request: Request, gateway: GatewayDep):
     """Set a memory key."""
     form = await request.form()
-    key = form.get("key", "")
-    value = form.get("value", "")
+    key = str(form.get("key", ""))
+    value = str(form.get("value", ""))
 
     if not key:
         return htmx_error(request, "Key required")

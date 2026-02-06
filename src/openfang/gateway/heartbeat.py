@@ -83,7 +83,7 @@ async def heartbeat_loop(gw: Gateway) -> None:
     while True:
         try:
             result = await run_heartbeat(gw)
-            status = "ok" if result.ok else f"alert: {result.alert[:50]}..."
+            status = "ok" if result.ok else f"alert: {(result.alert or 'unknown')[:50]}..."
             logger.info(f"Heartbeat: {status} ({result.duration_ms}ms)")
         except asyncio.CancelledError:
             break

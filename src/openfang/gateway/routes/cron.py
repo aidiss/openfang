@@ -20,8 +20,8 @@ async def cron_list(request: Request, jobs: CronDataDep):
 async def cron_create(request: Request, gateway: GatewayDep):
     """Create a cron job."""
     form = await request.form()
-    schedule = form.get("schedule", "")
-    task = form.get("task", "")
+    schedule = str(form.get("schedule", ""))
+    task = str(form.get("task", ""))
 
     if not schedule or not task:
         return htmx_error(request, "Schedule and task required")

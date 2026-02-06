@@ -3,7 +3,6 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import pytest
 
 from openfang.subagents.models import SubagentSpec
 from openfang.subagents.registry import SubagentRegistry
@@ -36,18 +35,16 @@ class TestSubagentRegistry:
     def test_register_overwrites(self):
         """Test that registering same ID overwrites."""
         registry = SubagentRegistry()
-        spec1 = SubagentSpec(
-            id="test", name="Test 1", description="First", system_prompt="1"
-        )
-        spec2 = SubagentSpec(
-            id="test", name="Test 2", description="Second", system_prompt="2"
-        )
+        spec1 = SubagentSpec(id="test", name="Test 1", description="First", system_prompt="1")
+        spec2 = SubagentSpec(id="test", name="Test 2", description="Second", system_prompt="2")
 
         registry.register(spec1)
         registry.register(spec2)
 
         assert len(registry.all()) == 1
-        assert registry.get("test").name == "Test 2"
+        spec = registry.get("test")
+        assert spec is not None
+        assert spec.name == "Test 2"
 
     def test_list_for_prompt_empty(self):
         """Test list_for_prompt with empty registry."""

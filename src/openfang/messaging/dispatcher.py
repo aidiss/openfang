@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Awaitable, Callable
 from .resolver import ResolvedRoute, RouteResolver
 
 if TYPE_CHECKING:
-    from ..adapters.channels import InboundMessage
+    from ..channels.models import InboundMessage
     from ..deps import Deps
     from ..protocols import Channels
 

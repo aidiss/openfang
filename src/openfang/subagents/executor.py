@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic_ai import Agent, RunContext, UsageLimits
+from pydantic_ai import Agent, UsageLimits
 
 from .models import SubagentResult, SubagentRunRecord, SubagentSpec
 

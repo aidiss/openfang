@@ -502,7 +502,7 @@ async def discord_send(ctx: RunContext[Deps], channel_id: str, message: str) -> 
 # TOOL REGISTRY
 # =============================================================================
 
-from .subagents import SUBAGENT_TOOLS
+from .subagents import SUBAGENT_TOOLS  # noqa: E402 - late import to avoid circular dependency
 
 ALL_TOOLS = [
     # Files

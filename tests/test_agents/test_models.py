@@ -1,7 +1,5 @@
 """Tests for agent models."""
 
-import pytest
-
 from openfang.agents.models import AgentConfig, AgentIdentity, AgentToolPolicy
 
 

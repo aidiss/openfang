@@ -3,9 +3,8 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import pytest
 
-from openfang.agents.models import AgentConfig, AgentIdentity
+from openfang.agents.models import AgentConfig
 from openfang.agents.registry import AgentRegistry
 
 
@@ -66,7 +65,9 @@ class TestAgentRegistry:
         registry.register(config2)
 
         assert len(registry.all()) == 1
-        assert registry.get("test").name == "Test 2"
+        agent = registry.get("test")
+        assert agent is not None
+        assert agent.name == "Test 2"
 
     def test_load_from_yaml(self):
         """Test loading a config from YAML."""
@@ -131,7 +132,9 @@ name: Agent 2
             assert len(configs) == 2
             assert registry.get("agent1") is not None
             assert registry.get("agent2") is not None
-            assert registry.get_default().id == "agent1"
+            default = registry.get_default()
+            assert default is not None
+            assert default.id == "agent1"
 
     def test_load_directory_nonexistent(self):
         """Test loading from nonexistent directory."""
@@ -160,4 +163,6 @@ name: Agent 2
         assert len(registry.all()) == 2
         assert registry.get("a") is not None
         assert registry.get("b") is not None
-        assert registry.get_default().id == "b"
+        default = registry.get_default()
+        assert default is not None
+        assert default.id == "b"

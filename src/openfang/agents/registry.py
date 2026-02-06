@@ -85,7 +85,7 @@ class AgentRegistry:
         Returns:
             A configured pydantic-ai Agent.
         """
-        from pydantic_ai import Agent, RunContext, ToolDefinition
+        from pydantic_ai import Agent, RunContext
 
         from ..settings import settings
         from ..tools import ALL_TOOLS

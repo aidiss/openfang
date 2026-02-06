@@ -44,7 +44,7 @@ class TestSubagentSpec:
     def test_spec_validation_required_fields(self):
         """Test that required fields are enforced."""
         with pytest.raises(ValueError):
-            SubagentSpec(id="test")  # Missing name, description, system_prompt
+            SubagentSpec(id="test")  # type: ignore[call-arg] - Testing validation
 
 
 class TestSubagentRunRecord:
@@ -68,7 +68,7 @@ class TestSubagentRunRecord:
                 run_id="run-1",
                 subagent_id="test",
                 task="Do something",
-                status=status,
+                status=status,  # type: ignore[arg-type] - iterating over valid literals
             )
             assert record.status == status
 

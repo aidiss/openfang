@@ -42,7 +42,7 @@ def get_update_info(update: Update) -> UpdateInfo | None:
         user = getattr(src, "from_user", None)
         if msg and user and hasattr(msg, "chat_id"):
             return UpdateInfo(
-                chat_id=msg.chat_id,
+                chat_id=int(msg.chat_id),  # type: ignore[arg-type]
                 user=user,
                 text=getattr(msg, "text", None) or getattr(src, "data", None),
                 message_id=getattr(msg, "message_id", None),
@@ -79,7 +79,6 @@ async def deps_from_telegram(
         user=user,
         conversations=conversations,
         cron=cron,
-        telegram_token=token,
         conversation_id=conv_id,
     ) as deps:
         await start_conversation(deps, conv_id)
@@ -115,14 +114,18 @@ async def run_telegram_bot(
                 return
             response = await chat(deps, info.text)
 
-        await update.message.reply_text(response)
+        if update.message:
+            await update.message.reply_text(response)
 
     async def handle_start(update: Update, context) -> None:
-        await update.message.reply_text("Hello! I'm your AI assistant. Send me a message and I'll help you.")
+        if update.message:
+            await update.message.reply_text("Hello! I'm your AI assistant. Send me a message and I'll help you.")
 
     app = Application.builder().token(token).build()
     app.add_handler(CommandHandler("start", handle_start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("Telegram bot starting...")
-    await app.run_polling()
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()  # type: ignore[union-attr]
