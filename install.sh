@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# OpenFang installer - https://openfang.ai
-# curl -fsSL https://openfang.ai/install.sh | bash
+# OpenFang installer
+# curl -fsSL https://raw.githubusercontent.com/aidiss/openfang/main/install.sh | bash
 set -euo pipefail
 
 INSTALL_DIR="${OPENFANG_DIR:-$HOME/openfang}"
