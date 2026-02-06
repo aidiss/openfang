@@ -32,6 +32,7 @@ if TYPE_CHECKING:
 
     from .models import User
     from .protocols import Channels, Conversations, Cron, Files, Memory, Projects, Shell, Skills, Web, WebSession
+    from .subagents import SubagentExecutor, SubagentRegistry
 
 
 # =============================================================================
@@ -140,6 +141,19 @@ class Deps:
     current_page: str | None = None
     conversation_id: str | None = None
 
+    # Subagent context
+    is_subagent: bool = False
+    """True if this is a subagent execution (prevents recursive spawning)."""
+
+    parent_run_id: str | None = None
+    """If subagent, the parent's run ID."""
+
+    subagents: SubagentRegistry | None = None
+    """Registry of available subagents."""
+
+    subagent_executor: SubagentExecutor | None = None
+    """Executor for spawning subagents."""
+
     # Session management delegates to web_adapters
     def new_session_id(self) -> str:
         return self.web_adapters.new_session_id()
@@ -183,9 +197,27 @@ async def create_deps(
     cron: Cron | None = None,
     current_page: str | None = None,
     conversation_id: str | None = None,
+    enable_subagents: bool = True,
 ) -> AsyncIterator[Deps]:
-    """Create Deps with sensible defaults. Use as async context manager."""
+    """Create Deps with sensible defaults. Use as async context manager.
+
+    Args:
+        user: User context for the agent.
+        root: Root directory for file operations.
+        conversations: Conversation storage adapter.
+        cron: Cron adapter.
+        current_page: Current page context.
+        conversation_id: Current conversation ID.
+        enable_subagents: Whether to enable subagent delegation.
+    """
+    from .subagents import SubagentExecutor, SubagentRegistry
+
     root = root or Path.cwd()
+
+    # Initialize subagent system if enabled
+    subagents = SubagentRegistry.default() if enable_subagents else None
+    subagent_executor = SubagentExecutor() if enable_subagents else None
+
     deps = Deps(
         user=user,
         storage=StorageAdapters.default(root, conversations),
@@ -195,6 +227,8 @@ async def create_deps(
         comms=CommsAdapters.default(),
         current_page=current_page,
         conversation_id=conversation_id,
+        subagents=subagents,
+        subagent_executor=subagent_executor,
     )
     try:
         yield deps

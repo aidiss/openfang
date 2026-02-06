@@ -502,6 +502,8 @@ async def discord_send(ctx: RunContext[Deps], channel_id: str, message: str) -> 
 # TOOL REGISTRY
 # =============================================================================
 
+from .subagents import SUBAGENT_TOOLS
+
 ALL_TOOLS = [
     # Files
     file_read,
@@ -541,4 +543,6 @@ ALL_TOOLS = [
     telegram_send,
     # Discord
     discord_send,
+    # Subagents
+    *SUBAGENT_TOOLS,
 ]

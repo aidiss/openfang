@@ -50,6 +50,9 @@ TOOL_PERMISSIONS: dict[str, set[str] | None] = {
     "cron_delete": {Role.ADMIN},
     # Telegram - all users
     "telegram_send": None,
+    # Subagent tools - developers only
+    "subagent_delegate": {Role.DEVELOPER, Role.ADMIN},
+    "subagent_list": {Role.DEVELOPER, Role.ADMIN},
 }
 
 
@@ -124,6 +127,13 @@ def create_agent(
         if skills_prompt:
             lines.append("")
             lines.append(skills_prompt)
+
+        # Subagents (only for main agent, not subagents)
+        if not ctx.deps.is_subagent and ctx.deps.subagents:
+            subagents_prompt = ctx.deps.subagents.list_for_prompt()
+            if subagents_prompt:
+                lines.append("")
+                lines.append(subagents_prompt)
 
         return "\n".join(lines)
 
