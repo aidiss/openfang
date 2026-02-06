@@ -7,6 +7,7 @@ on:
       - docs/**
       - mkdocs.yml
       - src/**/*.py
+  workflow_dispatch:  # Manual trigger
 
 permissions:
   contents: write
