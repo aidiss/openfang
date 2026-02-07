@@ -20,9 +20,9 @@ from unittest.mock import MagicMock  # noqa: E402
 import pytest  # noqa: E402
 
 from openfang.capabilities import (  # noqa: E402
-    InMemoryConversations,
     InMemoryCron,
     InMemoryMemory,
+    InMemorySessions,
     LocalFiles,
 )
 from openfang.channels.models import ChannelAccount, ChannelInfo, ChannelStatus  # noqa: E402
@@ -230,9 +230,9 @@ def memory() -> InMemoryMemory:
 
 
 @pytest.fixture
-def conversations() -> InMemoryConversations:
-    """In-memory conversation store (already a fake)."""
-    return InMemoryConversations()
+def sessions() -> InMemorySessions:
+    """In-memory session store (already a fake)."""
+    return InMemorySessions()
 
 
 @pytest.fixture

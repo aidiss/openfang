@@ -15,7 +15,7 @@ router = APIRouter(tags=["core"])
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request, deps: DepsDep):
     """Serve the chat interface."""
-    return templates.TemplateResponse(request, "chat.html", {"conversation_id": deps.conversation_id})
+    return templates.TemplateResponse(request, "chat.html", {"session_id": deps.session_id})
 
 
 @router.get("/health")
@@ -48,7 +48,7 @@ async def overview(request: Request, deps: DepsDep, state: StateDep, uptime: Upt
     eligible_skills = deps.comms.skills.eligible_skills()
     memory_keys = await deps.storage.memory.keys()
     cron_jobs = await deps.scheduling.cron.list()
-    conversation_ids = await deps.storage.conversations.list()
+    session_ids = await deps.storage.sessions.list()
     channels = deps.comms.channels.list_channels()
 
     # Count active channel accounts
@@ -65,7 +65,7 @@ async def overview(request: Request, deps: DepsDep, state: StateDep, uptime: Upt
         "skills_active": len(eligible_skills),
         "memory_count": len(memory_keys),
         "cron_count": len(cron_jobs),
-        "conversations_count": len(conversation_ids),
+        "sessions_count": len(session_ids),
         "channels_total": len(channels),
         "channels_active": active_channels,
     }

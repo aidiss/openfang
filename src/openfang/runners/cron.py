@@ -6,11 +6,11 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from datetime import datetime
 
-from openfang.capabilities import InMemoryConversations
-from openfang.chat import chat, start_conversation
+from openfang.capabilities import InMemorySessions
+from openfang.chat import chat, start_session
 from openfang.deps import create_deps
 from openfang.models import CronJob, User
-from openfang.protocols import Conversations, Cron
+from openfang.protocols import Cron, Sessions
 
 
 def cron_matches(schedule: str, dt: datetime) -> bool:
@@ -64,7 +64,7 @@ async def run_cron_checker(
 
 async def run_cron_with_agent(
     cron: Cron,
-    conversations: Conversations | None = None,
+    sessions: Sessions | None = None,
     check_interval: int = 60,
 ):
     """
@@ -73,17 +73,17 @@ async def run_cron_with_agent(
     Each job's task becomes a prompt for the agent.
     """
 
-    conversations = conversations or InMemoryConversations()
+    sessions = sessions or InMemorySessions()
 
     async def execute_job(job: CronJob):
         system_user = User(id=0, email="cron@system", roles={"admin", "developer"})
 
         async with create_deps(
             user=system_user,
-            conversations=conversations,
+            sessions=sessions,
             cron=cron,
         ) as deps:
-            await start_conversation(deps, f"cron-{job.id}")
+            await start_session(deps, f"cron-{job.id}")
             response = await chat(deps, job.task)
             print(f"[CRON] Job {job.id} response: {response}")
 

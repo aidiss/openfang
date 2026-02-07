@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     user_phone: str | None = None
     user_telegram: str | None = None
 
+    # Sessions storage
+    sessions_dir: str = "~/.openfang/sessions"
+    """Directory for file-based session transcripts (JSONL format)."""
+
     def get_model(self) -> str:
         """Get the effective model string, with gateway prefix if configured."""
         model = self.model

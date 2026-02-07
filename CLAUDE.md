@@ -47,12 +47,42 @@ uv run mkdocs serve                        # Docs preview
 - **Resolver** ([messaging/resolver.py](src/openfang/messaging/resolver.py)): Maps inbound messages to session keys: `{channel}:{account}:{peer_kind}:{peer_id}`
 - **Channels** ([channels/](src/openfang/channels/)): Platform connectors (Telegram, Discord implemented; others stubbed)
 
+### Gateway
+
+- **Gateway** ([gateway/core.py](src/openfang/gateway/core.py)): HTTP server + Web UI + channels in one process
+- **Why "gateway"**: CLI similarity with OpenClaw (`openfang gateway` mirrors `openclaw gateway`)
+- **What it runs**: HTTP API, Web UI (HTMX), SSE events, all configured channels, heartbeat
+- **Key difference from OpenClaw**: OpenClaw's gateway is WebSocket RPC for native apps; ours is HTTP REST + SSE
+- **Single command**: `openfang gateway` starts everything (HTTP + Telegram + Discord + heartbeat)
+
 ### Testing Philosophy
 
 Tests use **Fakes over Mocks** - `InMemory*` adapters work like real implementations but in memory. See [conftest.py](tests/conftest.py) for `FakeWeb`, `FakeShell`, `FakeProjects`, etc.
+
+## Specifications (SPEC/)
+
+The [SPEC/](SPEC/) folder contains **specification files** that define contracts, data models, and interfaces. Specs are the source of truth - read them before implementing features.
+
+**When to use specs:**
+- Before implementing a new feature, read the relevant spec
+- When adding adapters (e.g., Redis memory, Slack channel), consult the spec for expected behavior
+- For understanding system boundaries and protocols
+
+**Key specs:**
+| Spec | What it defines |
+|------|-----------------|
+| [OVERVIEW.md](SPEC/OVERVIEW.md) | Architecture, request flow, hexagonal design |
+| [protocols.md](SPEC/protocols.md) | All protocol interfaces (`Files`, `Web`, `Memory`, etc.) |
+| [tools.md](SPEC/tools.md) | Agent tools, permissions, categories |
+| [channels.md](SPEC/channels.md) | Message routing, channel protocol, session keys |
+| [configuration.md](SPEC/configuration.md) | All `OPENFANG_*` settings |
+
+Each spec includes: purpose, protocol interface, data models, current implementation, extension points, and OpenClaw reference.
 
 ## Key Rules
 
 - `/openclaw/` is reference only. Do NOT modify.
 - Config via env vars with `OPENFANG_` prefix or `.env` file
 - Async-first, type-first, Pydantic everywhere
+
+@AGENTS.md

@@ -10,7 +10,7 @@ import httpx
 import logfire
 
 from openfang.agent import create_agent
-from openfang.capabilities import InMemoryConversations, InMemoryCron
+from openfang.capabilities import InMemoryCron, InMemorySessions
 from openfang.client import GatewayClient
 from openfang.gateway import create_app
 from openfang.models import User
@@ -179,7 +179,7 @@ def cron(interval: int):
     click.echo(f"Starting cron checker (every {interval}s)...")
 
     async def _run():
-        await run_cron_with_agent(InMemoryCron(), InMemoryConversations(), check_interval=interval)
+        await run_cron_with_agent(InMemoryCron(), InMemorySessions(), check_interval=interval)
 
     run_async(_run())
 

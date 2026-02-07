@@ -51,8 +51,8 @@ class SubagentRunRecord(BaseModel):
     label: str | None = None
     """Optional user-facing label."""
 
-    parent_conversation_id: str | None = None
-    """Conversation ID of the parent agent."""
+    parent_session_id: str | None = None
+    """Session ID of the parent agent."""
 
     status: Literal["pending", "running", "completed", "failed", "timeout"] = "pending"
     """Current status of the run."""

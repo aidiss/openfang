@@ -48,13 +48,15 @@ Started with: `python -m openfang gateway`
 | GET | `/chat` | Web UI chat page |
 | POST | `/chat` | Send message, receive response |
 
-### Conversations
+### Sessions
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/conversations` | List all conversations |
-| GET | `/conversations/{id}` | Get conversation messages |
-| DELETE | `/conversations/{id}` | Delete conversation |
+| GET | `/sessions` | List all sessions |
+| GET | `/session/current` | Get current session info |
+| POST | `/sessions` | Create new session |
+| POST | `/sessions/{id}/switch` | Switch to session |
+| DELETE | `/sessions/{id}` | Delete session |
 
 ### Memory
 
@@ -117,7 +119,7 @@ Location: `src/openfang/gateway/templates/`
 templates/
 ├── base.html           # Base layout
 ├── chat.html           # Main chat interface
-├── conversations.html  # Conversation list
+├── sessions.html       # Session list
 ├── memory.html         # Memory viewer
 ├── cron.html           # Cron job manager
 ├── skills.html         # Skills list

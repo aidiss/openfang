@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from telegram import User as TelegramUser
 
     from ..deps import Deps
-    from ..protocols import Conversations, Cron
+    from ..protocols import Cron, Sessions
 
 
 @dataclass
@@ -54,12 +54,12 @@ def get_update_info(update: Update) -> UpdateInfo | None:
 async def deps_from_telegram(
     update: Update,
     *,
-    conversations: Conversations,
+    sessions: Sessions,
     cron: Cron,
     token: str,
 ) -> AsyncIterator[tuple[Deps, UpdateInfo] | tuple[None, None]]:
     """Create Deps from a Telegram update."""
-    from ..chat import start_conversation
+    from ..chat import start_session
     from ..deps import create_deps
     from ..models import User
 
@@ -73,40 +73,40 @@ async def deps_from_telegram(
         email=f"{info.user.username or info.user.id}@telegram",
         roles={"user"},
     )
-    conv_id = f"telegram-{info.chat_id}"
+    session_id = f"telegram-{info.chat_id}"
 
     async with create_deps(
         user=user,
-        conversations=conversations,
+        sessions=sessions,
         cron=cron,
-        conversation_id=conv_id,
+        session_id=session_id,
     ) as deps:
-        await start_conversation(deps, conv_id)
+        await start_session(deps, session_id)
         yield deps, info
 
 
 async def run_telegram_bot(
     token: str,
-    conversations: Conversations | None = None,
+    sessions: Sessions | None = None,
     cron: Cron | None = None,
 ):
     """
     Run Telegram bot that listens for messages and responds via agent.
 
-    Each Telegram chat gets its own conversation thread.
+    Each Telegram chat gets its own session.
     """
     from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
-    from ..capabilities import InMemoryConversations, InMemoryCron
+    from ..capabilities import InMemoryCron, InMemorySessions
     from ..chat import chat
 
-    conversations = conversations or InMemoryConversations()
+    sessions = sessions or InMemorySessions()
     cron = cron or InMemoryCron()
 
     async def handle_message(update: Update, context) -> None:
         async with deps_from_telegram(
             update,
-            conversations=conversations,
+            sessions=sessions,
             cron=cron,
             token=token,
         ) as (deps, info):

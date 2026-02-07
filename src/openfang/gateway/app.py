@@ -17,13 +17,13 @@ from .heartbeat import heartbeat_loop
 from .routes import (
     channels_router,
     chat_router,
-    conversations_router,
     core_router,
     cron_router,
     events_router,
     heartbeat_router,
     memory_router,
     projects_router,
+    sessions_router,
     skills_router,
     webhooks_router,
 )
@@ -76,7 +76,7 @@ def create_app() -> FastAPI:
         core_router,
         chat_router,
         heartbeat_router,
-        conversations_router,
+        sessions_router,
         cron_router,
         memory_router,
         projects_router,

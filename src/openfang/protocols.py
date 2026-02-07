@@ -157,27 +157,27 @@ class Projects(Protocol):
 
 
 @runtime_checkable
-class Conversations(Protocol):
-    """Store and retrieve conversation message histories."""
+class Sessions(Protocol):
+    """Store and retrieve session message histories (transcripts)."""
 
-    async def get(self, conversation_id: str) -> list[ModelMessage]:
-        """Get all messages for a conversation."""
+    async def get(self, session_id: str) -> list[ModelMessage]:
+        """Get all messages for a session."""
         ...
 
-    async def save(self, conversation_id: str, messages: list[ModelMessage]) -> None:
-        """Save (replace) all messages for a conversation."""
+    async def save(self, session_id: str, messages: list[ModelMessage]) -> None:
+        """Save (replace) all messages for a session."""
         ...
 
-    async def append(self, conversation_id: str, messages: list[ModelMessage]) -> None:
-        """Append messages to a conversation."""
+    async def append(self, session_id: str, messages: list[ModelMessage]) -> None:
+        """Append messages to a session."""
         ...
 
-    async def delete(self, conversation_id: str) -> None:
-        """Delete a conversation and all its messages."""
+    async def delete(self, session_id: str) -> None:
+        """Delete a session and all its messages."""
         ...
 
     async def list(self, user_id: int | None = None) -> list[str]:
-        """List all conversation IDs, optionally filtered by user."""
+        """List all session IDs, optionally filtered by user."""
         ...
 
 

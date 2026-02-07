@@ -36,7 +36,7 @@ def _create_heartbeat_deps():
 
     return Deps(
         user=user,
-        conversation_id="heartbeat",
+        session_id="heartbeat",
         storage=StorageAdapters.default(root),
         web_adapters=WebAdapters.default(),
         workspace=WorkspaceAdapters.default(root),

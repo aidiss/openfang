@@ -16,9 +16,9 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from openfang.capabilities import (
-    InMemoryConversations,
     InMemoryCron,
     InMemoryMemory,
+    InMemorySessions,
     LocalFiles,
     LocalProjects,
     LocalShell,
@@ -57,11 +57,11 @@ def e2e_deps(e2e_user: User, tmp_path: Path) -> Deps:
     """Deps with all InMemory adapters for E2E tests."""
     return Deps(
         user=e2e_user,
-        conversation_id="e2e-session",
+        session_id="e2e-session",
         storage=StorageAdapters(
             files=LocalFiles(root=tmp_path),
             memory=InMemoryMemory(),
-            conversations=InMemoryConversations(),
+            sessions=InMemorySessions(),
         ),
         web_adapters=WebAdapters(web=PlaywrightWeb()),
         workspace=WorkspaceAdapters(

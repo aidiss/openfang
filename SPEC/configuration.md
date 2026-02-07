@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     user_email: str = "cli@local"
     user_phone: str | None = None
     user_telegram: str | None = None
+
+    # Storage
+    sessions_dir: str = "~/.openfang/sessions"
 ```
 
 ## Environment Variables
@@ -98,6 +101,22 @@ Model format: `provider:model` (e.g., `openai:gpt-4o`, `anthropic:claude-sonnet-
 
 Channels auto-configure when tokens are set.
 
+### Authorization
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OPENFANG_USER_TELEGRAM` | — | Owner's Telegram user ID |
+
+**Security**: Only the owner (single user) can interact with the bot. Set `OPENFANG_USER_TELEGRAM` to your Telegram user ID. Unauthorized users receive an "Access denied" message.
+
+Example:
+```bash
+# Your Telegram user ID (get from @userinfobot)
+OPENFANG_USER_TELEGRAM=123456789
+```
+
+To find your Telegram user ID, message [@userinfobot](https://t.me/userinfobot) on Telegram.
+
 ### Webhooks
 
 | Variable | Default | Description |
@@ -112,6 +131,19 @@ Channels auto-configure when tokens are set.
 | `OPENFANG_USER_EMAIL` | `cli@local` | Default user email |
 | `OPENFANG_USER_PHONE` | — | User phone number |
 | `OPENFANG_USER_TELEGRAM` | — | User Telegram ID |
+
+### Storage
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OPENFANG_SESSIONS_DIR` | `~/.openfang/sessions` | Directory for session transcripts (JSONL files) |
+
+Sessions are stored as JSONL files (one per session) with format similar to OpenClaw:
+```jsonl
+{"type": "session", "version": 1, "id": "telegram:bot:dm:123", "timestamp": "2024-01-15T10:30:00Z"}
+{"type": "message", "message": {"kind": "request", "parts": [...]}}
+{"type": "message", "message": {"kind": "response", "parts": [...]}}
+```
 
 ## .env File
 
@@ -130,6 +162,9 @@ PYDANTIC_AI_GATEWAY_API_KEY=your-gateway-key
 OPENFANG_TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
 OPENFANG_DISCORD_BOT_TOKEN=MTIz...
 
+# Owner (required for Telegram access)
+OPENFANG_USER_TELEGRAM=123456789  # Your Telegram user ID (get from @userinfobot)
+
 # Gateway
 OPENFANG_HOST=0.0.0.0
 OPENFANG_PORT=8080
@@ -140,6 +175,9 @@ OPENFANG_HEARTBEAT_INTERVAL=3600
 
 # Observability
 OPENFANG_LOGFIRE_ENABLED=false
+
+# Storage
+OPENFANG_SESSIONS_DIR=~/.openfang/sessions
 ```
 
 ## Model Resolution

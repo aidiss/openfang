@@ -1,4 +1,4 @@
-"""Chat helper for multi-turn conversations."""
+"""Chat helper for multi-turn sessions."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import logfire
 from pydantic_ai import UsageLimits
 
-from .capabilities import InMemoryConversations
+from .capabilities import InMemorySessions
 
 if TYPE_CHECKING:
     from .deps import Deps
@@ -25,28 +25,28 @@ async def chat(
     usage_limits: UsageLimits | None = None,
 ) -> str:
     """
-    Run a chat turn, managing conversation history automatically.
+    Run a chat turn, managing session history automatically.
 
-    - Loads message history from deps.conversations if conversation_id is set
+    - Loads message history from deps.sessions if session_id is set
     - Runs agent with history
-    - Saves new messages back to conversations
+    - Saves new messages back to sessions
     - Returns the agent's response
     """
     from .agent import default_agent as agent
 
     limits = usage_limits or DEFAULT_USAGE_LIMITS
-    conv_id = deps.conversation_id
+    session_id = deps.session_id
 
     with logfire.span(
         "chat",
-        conversation_id=conv_id,
+        session_id=session_id,
         user_id=deps.user.id,
         message_preview=user_message[:100],
     ):
-        # Load existing history if we have a conversation
+        # Load existing history if we have a session
         message_history = []
-        if conv_id:
-            message_history = await deps.storage.conversations.get(conv_id)
+        if session_id:
+            message_history = await deps.storage.sessions.get(session_id)
             logfire.info("loaded history", message_count=len(message_history))
 
         # Run agent with history
@@ -57,9 +57,9 @@ async def chat(
             usage_limits=limits,
         )
 
-        # Save new messages if we have a conversation
-        if conv_id:
-            await deps.storage.conversations.append(conv_id, result.new_messages())
+        # Save new messages if we have a session
+        if session_id:
+            await deps.storage.sessions.append(session_id, result.new_messages())
 
         logfire.info(
             "chat complete",
@@ -70,8 +70,8 @@ async def chat(
         return result.output
 
 
-async def start_conversation(deps: Deps, conversation_id: str) -> None:
-    """Start or resume a conversation."""
-    deps.conversation_id = conversation_id
-    if isinstance(deps.storage.conversations, InMemoryConversations):
-        deps.storage.conversations.associate_user(conversation_id, deps.user.id)
+async def start_session(deps: Deps, session_id: str) -> None:
+    """Start or resume a session."""
+    deps.session_id = session_id
+    if isinstance(deps.storage.sessions, InMemorySessions):
+        deps.storage.sessions.associate_user(session_id, deps.user.id)

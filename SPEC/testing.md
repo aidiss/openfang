@@ -50,7 +50,7 @@ class FakeFiles:
 | `FakeWeb` | `PlaywrightWeb` | Configurable URL responses |
 | `FakeShell` | `LocalShell` | Recorded command outputs |
 | `FakeProjects` | `LocalProjects` | In-memory project registry |
-| `FakeConversations` | `InMemoryConversations` | Already in-memory |
+| `FakeSessions` | `InMemorySessions` | Already in-memory |
 | `FakeCron` | `InMemoryCron` | Already in-memory |
 
 ### FakeWeb Example
@@ -125,7 +125,7 @@ async def test_deps(fake_files, fake_web, fake_shell, test_user):
         storage=StorageAdapters(
             files=fake_files,
             memory=InMemoryMemory(),
-            conversations=InMemoryConversations(),
+            sessions=InMemorySessions(),
         ),
         web_adapters=WebAdapters(web=fake_web),
         workspace=WorkspaceAdapters(

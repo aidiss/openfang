@@ -49,7 +49,7 @@ class SubagentExecutor:
             run_id=run_id,
             subagent_id=spec.id,
             task=task,
-            parent_conversation_id=deps.conversation_id,
+            parent_session_id=deps.session_id,
             status="running",
             created_at=datetime.now(),
             started_at=datetime.now(),
@@ -120,18 +120,18 @@ class SubagentExecutor:
             # Remove from active runs
             self._active_runs.pop(run_id, None)
 
-    def list_active(self, conversation_id: str | None = None) -> list[SubagentRunRecord]:
+    def list_active(self, session_id: str | None = None) -> list[SubagentRunRecord]:
         """List active subagent runs.
 
         Args:
-            conversation_id: Filter by parent conversation ID. If None, returns all.
+            session_id: Filter by parent session ID. If None, returns all.
 
         Returns:
             List of active run records.
         """
         runs = list(self._active_runs.values())
-        if conversation_id:
-            runs = [r for r in runs if r.parent_conversation_id == conversation_id]
+        if session_id:
+            runs = [r for r in runs if r.parent_session_id == session_id]
         return runs
 
     def _create_agent(self, spec: SubagentSpec) -> Agent[Deps, str]:

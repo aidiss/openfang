@@ -57,7 +57,7 @@ User Message
 @dataclass
 class Deps:
     user: User
-    storage: StorageAdapters      # files, memory, conversations
+    storage: StorageAdapters      # files, memory, sessions
     web_adapters: WebAdapters     # web, sessions
     workspace: WorkspaceAdapters  # shell, projects
     scheduling: SchedulingAdapters # cron
@@ -65,7 +65,7 @@ class Deps:
 
     # Context
     current_page: str | None
-    conversation_id: str | None
+    session_id: str | None
 
     # Subagent
     is_subagent: bool

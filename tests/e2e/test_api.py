@@ -137,30 +137,30 @@ class TestChatEndpoint:
         assert "Hello!" in response.text
 
 
-class TestConversationsEndpoints:
-    """Test conversation management endpoints."""
+class TestSessionsEndpoints:
+    """Test session management endpoints."""
 
-    async def test_conversations_list(self, client: AsyncClient):
-        """Can list conversations."""
-        response = await client.get("/conversations")
+    async def test_sessions_list(self, client: AsyncClient):
+        """Can list sessions."""
+        response = await client.get("/sessions")
         assert response.status_code == 200
         data = response.json()
-        # Returns {"conversations": [...], "current_id": ...}
-        assert "conversations" in data
+        # Returns {"sessions": [...], "current_id": ...}
+        assert "sessions" in data
         assert "current_id" in data
 
-    async def test_conversation_create_and_switch(self, client: AsyncClient):
-        """Can create and switch conversations."""
-        # Create a new conversation (uses form data)
+    async def test_session_create_and_switch(self, client: AsyncClient):
+        """Can create and switch sessions."""
+        # Create a new session (uses form data)
         response = await client.post(
-            "/conversations",
-            data={"id": "new-conv"},
+            "/sessions",
+            data={"id": "new-session"},
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         assert response.status_code == 200
 
         # Switch to it
-        response = await client.post("/conversations/new-conv/switch")
+        response = await client.post("/sessions/new-session/switch")
         assert response.status_code == 200
 
 

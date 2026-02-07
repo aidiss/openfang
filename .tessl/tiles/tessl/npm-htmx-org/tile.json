@@ -1,0 +1,7 @@
+{
+  "name": "tessl/npm-htmx-org",
+  "version": "2.0.0",
+  "docs": "docs/index.md",
+  "describes": "pkg:npm/htmx.org@2.0.6",
+  "summary": "JavaScript library that extends HTML with AJAX, CSS Transitions, WebSockets, and Server-Sent Events through declarative attributes"
+}

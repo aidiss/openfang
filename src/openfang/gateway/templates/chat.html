@@ -191,14 +191,14 @@
                 <!-- Chat header with session info -->
                 <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-2 flex items-center justify-between">
                     <div id="chat-header"
-                         hx-get="/conversation/current"
-                         hx-trigger="load, convChanged from:body"
+                         hx-get="/session/current"
+                         hx-trigger="load, sessionChanged from:body"
                          hx-swap="innerHTML"
                          class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <span>{{ conversation_id }}</span>
+                        <span>{{ session_id }}</span>
                     </div>
-                    <button hx-post="/conversations"
-                            hx-target="#convos-panel"
+                    <button hx-post="/sessions"
+                            hx-target="#sessions-panel"
                             hx-swap="innerHTML"
                             class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors">
                         New session
@@ -241,8 +241,8 @@
 
             <!-- Sessions View -->
             <div x-show="view === 'sessions'" class="h-full overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
-                <div id="convos-panel"
-                     hx-get="/conversations"
+                <div id="sessions-panel"
+                     hx-get="/sessions"
                      hx-trigger="load, every 10s"
                      hx-swap="innerHTML">
                     <div class="text-gray-400 dark:text-gray-500">Loading...</div>
@@ -323,7 +323,7 @@ function app() {
                 }
                 if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
                     e.preventDefault();
-                    htmx.ajax('POST', '/conversations', {target: '#convos-panel'});
+                    htmx.ajax('POST', '/sessions', {target: '#sessions-panel'});
                 }
             });
         }
@@ -335,10 +335,10 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
     if (evt.detail.target.id === 'messages') {
         evt.detail.target.scrollTop = evt.detail.target.scrollHeight;
     }
-    // Only clear messages when creating a NEW conversation (POST), not on refresh (GET)
-    if (evt.detail.target.id === 'convos-panel' && evt.detail.requestConfig?.verb === 'post') {
+    // Only clear messages when creating a NEW session (POST), not on refresh (GET)
+    if (evt.detail.target.id === 'sessions-panel' && evt.detail.requestConfig?.verb === 'post') {
         document.getElementById('messages').innerHTML = '';
-        htmx.trigger(document.body, 'convChanged');
+        htmx.trigger(document.body, 'sessionChanged');
     }
 });
 </script>

@@ -15,16 +15,17 @@ Run modes:
 # Implementations
 from .agent import TOOL_PERMISSIONS, create_agent, default_agent
 from .capabilities import (
-    InMemoryConversations,
+    FileSessions,
     InMemoryCron,
     InMemoryMemory,
+    InMemorySessions,
     LocalFiles,
     LocalProjects,
     LocalShell,
     PlaywrightSession,
     PlaywrightWeb,
 )
-from .chat import DEFAULT_USAGE_LIMITS, chat, start_conversation
+from .chat import DEFAULT_USAGE_LIMITS, chat, start_session
 
 # Core
 from .deps import (
@@ -40,11 +41,11 @@ from .models import CronJob, User
 
 # Protocols
 from .protocols import (
-    Conversations,
     Cron,
     Files,
     Memory,
     Projects,
+    Sessions,
     Shell,
     Web,
     WebSession,
@@ -78,18 +79,19 @@ __all__ = [
     "CronJob",
     "User",
     # Protocols
-    "Conversations",
     "Cron",
     "Files",
     "Memory",
     "Projects",
+    "Sessions",
     "Shell",
     "Web",
     "WebSession",
     # Implementations
-    "InMemoryConversations",
+    "FileSessions",
     "InMemoryCron",
     "InMemoryMemory",
+    "InMemorySessions",
     "LocalFiles",
     "LocalProjects",
     "LocalShell",
@@ -108,7 +110,7 @@ __all__ = [
     "create_agent",
     "TOOL_PERMISSIONS",
     "chat",
-    "start_conversation",
+    "start_session",
     "DEFAULT_USAGE_LIMITS",
     # Runners
     "run_cron_checker",

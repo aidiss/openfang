@@ -1,8 +1,9 @@
 """Tests for adapter implementations."""
 
 import pytest
+from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, UserPromptPart
 
-from openfang.capabilities import InMemoryConversations, InMemoryMemory, LocalFiles
+from openfang.capabilities import FileSessions, InMemoryMemory, InMemorySessions, LocalFiles
 
 
 @pytest.mark.asyncio
@@ -75,51 +76,137 @@ class TestLocalFiles:
 
 
 @pytest.mark.asyncio
-class TestInMemoryConversations:
+class TestInMemorySessions:
     @pytest.fixture
-    def convos(self):
-        return InMemoryConversations()
+    def sessions(self):
+        return InMemorySessions()
 
-    async def test_get_nonexistent(self, convos):
-        assert await convos.get("missing") == []
+    async def test_get_nonexistent(self, sessions):
+        assert await sessions.get("missing") == []
 
-    async def test_save_and_get(self, convos):
+    async def test_save_and_get(self, sessions):
         messages = [{"role": "user", "content": "hi"}]
-        await convos.save("conv-1", messages)
-        assert await convos.get("conv-1") == messages
+        await sessions.save("session-1", messages)
+        assert await sessions.get("session-1") == messages
 
-    async def test_append(self, convos):
-        await convos.save("conv-1", [{"role": "user", "content": "hi"}])
-        await convos.append("conv-1", [{"role": "assistant", "content": "hello"}])
+    async def test_append(self, sessions):
+        await sessions.save("session-1", [{"role": "user", "content": "hi"}])
+        await sessions.append("session-1", [{"role": "assistant", "content": "hello"}])
 
-        messages = await convos.get("conv-1")
+        messages = await sessions.get("session-1")
         assert len(messages) == 2
 
-    async def test_append_to_new(self, convos):
-        await convos.append("new-conv", [{"role": "user", "content": "hi"}])
-        assert len(await convos.get("new-conv")) == 1
+    async def test_append_to_new(self, sessions):
+        await sessions.append("new-session", [{"role": "user", "content": "hi"}])
+        assert len(await sessions.get("new-session")) == 1
 
-    async def test_delete(self, convos):
-        await convos.save("conv-1", [{"role": "user", "content": "hi"}])
-        await convos.delete("conv-1")
-        assert await convos.get("conv-1") == []
+    async def test_delete(self, sessions):
+        await sessions.save("session-1", [{"role": "user", "content": "hi"}])
+        await sessions.delete("session-1")
+        assert await sessions.get("session-1") == []
 
-    async def test_list_all(self, convos):
-        await convos.save("conv-1", [])
-        await convos.save("conv-2", [])
-        assert sorted(await convos.list()) == ["conv-1", "conv-2"]
+    async def test_list_all(self, sessions):
+        await sessions.save("session-1", [])
+        await sessions.save("session-2", [])
+        assert sorted(await sessions.list()) == ["session-1", "session-2"]
 
-    async def test_list_by_user(self, convos):
-        await convos.save("conv-1", [])
-        await convos.save("conv-2", [])
-        convos.associate_user("conv-1", user_id=42)
+    async def test_list_by_user(self, sessions):
+        await sessions.save("session-1", [])
+        await sessions.save("session-2", [])
+        sessions.associate_user("session-1", user_id=42)
 
-        assert await convos.list(user_id=42) == ["conv-1"]
-        assert await convos.list(user_id=999) == []
+        assert await sessions.list(user_id=42) == ["session-1"]
+        assert await sessions.list(user_id=999) == []
 
-    async def test_delete_removes_user_association(self, convos):
-        await convos.save("conv-1", [])
-        convos.associate_user("conv-1", user_id=42)
-        await convos.delete("conv-1")
+    async def test_delete_removes_user_association(self, sessions):
+        await sessions.save("session-1", [])
+        sessions.associate_user("session-1", user_id=42)
+        await sessions.delete("session-1")
 
-        assert await convos.list(user_id=42) == []
+        assert await sessions.list(user_id=42) == []
+
+
+@pytest.mark.asyncio
+class TestFileSessions:
+    """Tests for file-based JSONL session storage."""
+
+    @pytest.fixture
+    def sessions(self, tmp_path):
+        return FileSessions(tmp_path)
+
+    @pytest.fixture
+    def sample_messages(self):
+        """Create sample ModelMessage objects for testing."""
+        return [
+            ModelRequest(parts=[UserPromptPart(content="Hello")]),
+            ModelResponse(parts=[TextPart(content="Hi there!")]),
+        ]
+
+    async def test_get_nonexistent(self, sessions):
+        assert await sessions.get("missing") == []
+
+    async def test_save_and_get(self, sessions, sample_messages):
+        await sessions.save("session-1", sample_messages)
+        retrieved = await sessions.get("session-1")
+
+        assert len(retrieved) == 2
+        # Check message types preserved
+        assert retrieved[0].kind == "request"
+        assert retrieved[1].kind == "response"
+
+    async def test_append(self, sessions, sample_messages):
+        # Save initial messages
+        await sessions.save("session-1", sample_messages[:1])
+
+        # Append more
+        await sessions.append("session-1", sample_messages[1:])
+
+        retrieved = await sessions.get("session-1")
+        assert len(retrieved) == 2
+
+    async def test_append_to_new(self, sessions, sample_messages):
+        # Append to non-existent session creates it
+        await sessions.append("new-session", sample_messages)
+        assert len(await sessions.get("new-session")) == 2
+
+    async def test_delete(self, sessions, sample_messages):
+        await sessions.save("session-1", sample_messages)
+        await sessions.delete("session-1")
+        assert await sessions.get("session-1") == []
+
+    async def test_list_all(self, sessions, sample_messages):
+        await sessions.save("session-1", sample_messages)
+        await sessions.save("session-2", sample_messages)
+
+        session_list = await sessions.list()
+        assert "session-1" in session_list
+        assert "session-2" in session_list
+
+    async def test_file_persistence(self, tmp_path, sample_messages):
+        # Save with one instance
+        sessions1 = FileSessions(tmp_path)
+        await sessions1.save("persistent", sample_messages)
+
+        # Read with new instance (simulates restart)
+        sessions2 = FileSessions(tmp_path)
+        retrieved = await sessions2.get("persistent")
+
+        assert len(retrieved) == 2
+        assert retrieved[0].kind == "request"
+
+    async def test_sanitizes_session_id(self, sessions, sample_messages):
+        # Session keys contain colons
+        session_key = "telegram:bot:dm:123456"
+        await sessions.save(session_key, sample_messages)
+
+        # Should be retrievable
+        retrieved = await sessions.get(session_key)
+        assert len(retrieved) == 2
+
+    async def test_list_ignores_user_id(self, sessions, sample_messages):
+        # FileSessions doesn't support user filtering
+        await sessions.save("session-1", sample_messages)
+
+        # user_id parameter is ignored, returns all
+        all_sessions = await sessions.list(user_id=42)
+        assert "session-1" in all_sessions

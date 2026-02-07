@@ -1,0 +1,7 @@
+{
+  "name": "tessl/pypi-pydantic-ai",
+  "version": "0.8.0",
+  "docs": "docs/index.md",
+  "describes": "pkg:pypi/pydantic-ai@0.8.1",
+  "summary": "Agent Framework / shim to use Pydantic with LLMs"
+}

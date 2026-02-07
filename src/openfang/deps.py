@@ -1,8 +1,8 @@
 """Deps container - all adapters for an agent.
 
 Adapters are organized into logical groups:
-- storage: files, memory, conversations (data persistence)
-- web: browser-based operations and sessions
+- storage: files, memory, sessions (data persistence)
+- web: browser-based operations and web sessions
 - workspace: shell, projects (local environment)
 - scheduling: cron jobs
 - comms: channels, skills (communication and capabilities)
@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from .capabilities import (
-    InMemoryConversations,
+    FileSessions,
     InMemoryCron,
     InMemoryMemory,
     LocalFiles,
@@ -25,13 +25,14 @@ from .capabilities import (
     PlaywrightWeb,
 )
 from .channels import ChannelRegistry
+from .settings import settings
 from .skills import SkillRegistry
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
     from .models import User
-    from .protocols import Channels, Conversations, Cron, Files, Memory, Projects, Shell, Skills, Web, WebSession
+    from .protocols import Channels, Cron, Files, Memory, Projects, Sessions, Shell, Skills, Web, WebSession
     from .subagents import SubagentExecutor, SubagentRegistry
 
 
@@ -46,14 +47,16 @@ class StorageAdapters:
 
     files: Files
     memory: Memory
-    conversations: Conversations
+    sessions: Sessions
 
     @classmethod
-    def default(cls, root: Path, conversations: Conversations | None = None) -> StorageAdapters:
+    def default(cls, root: Path, sessions: Sessions | None = None) -> StorageAdapters:
+        if sessions is None:
+            sessions = FileSessions(settings.sessions_dir)
         return cls(
             files=LocalFiles(root),
             memory=InMemoryMemory(),
-            conversations=conversations or InMemoryConversations(),
+            sessions=sessions,
         )
 
 
@@ -139,7 +142,7 @@ class Deps:
     scheduling: SchedulingAdapters
     comms: CommsAdapters
     current_page: str | None = None
-    conversation_id: str | None = None
+    session_id: str | None = None
 
     # Subagent context
     is_subagent: bool = False
@@ -173,7 +176,7 @@ class Deps:
         self.storage = StorageAdapters(
             files=LocalFiles(path),
             memory=self.storage.memory,
-            conversations=self.storage.conversations,
+            sessions=self.storage.sessions,
         )
         self.workspace = WorkspaceAdapters(
             shell=LocalShell(path),  # nosec B604
@@ -193,10 +196,10 @@ class Deps:
 async def create_deps(
     user: User,
     root: Path | None = None,
-    conversations: Conversations | None = None,
+    sessions: Sessions | None = None,
     cron: Cron | None = None,
     current_page: str | None = None,
-    conversation_id: str | None = None,
+    session_id: str | None = None,
     enable_subagents: bool = True,
 ) -> AsyncIterator[Deps]:
     """Create Deps with sensible defaults. Use as async context manager.
@@ -204,10 +207,10 @@ async def create_deps(
     Args:
         user: User context for the agent.
         root: Root directory for file operations.
-        conversations: Conversation storage adapter.
+        sessions: Session storage adapter.
         cron: Cron adapter.
         current_page: Current page context.
-        conversation_id: Current conversation ID.
+        session_id: Current session ID.
         enable_subagents: Whether to enable subagent delegation.
     """
     from .subagents import SubagentExecutor, SubagentRegistry
@@ -220,13 +223,13 @@ async def create_deps(
 
     deps = Deps(
         user=user,
-        storage=StorageAdapters.default(root, conversations),
+        storage=StorageAdapters.default(root, sessions),
         web_adapters=WebAdapters.default(),
         workspace=WorkspaceAdapters.default(root),
         scheduling=SchedulingAdapters.default(cron),
         comms=CommsAdapters.default(),
         current_page=current_page,
-        conversation_id=conversation_id,
+        session_id=session_id,
         subagents=subagents,
         subagent_executor=subagent_executor,
     )

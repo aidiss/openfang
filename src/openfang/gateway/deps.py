@@ -27,10 +27,10 @@ templates = Jinja2Templates(env=_env)
 # =============================================================================
 
 
-def _create_deps(conversation_id: str = "web-session") -> Deps:
+def _create_deps(session_id: str = "web-session") -> Deps:
     """Create deps for an HTTP request.
 
-    Each request gets fresh deps with the specified conversation.
+    Each request gets fresh deps with the specified session.
     """
     from ..deps import CommsAdapters, Deps, SchedulingAdapters, StorageAdapters, WebAdapters, WorkspaceAdapters
     from ..models import User
@@ -40,7 +40,7 @@ def _create_deps(conversation_id: str = "web-session") -> Deps:
 
     return Deps(
         user=user,
-        conversation_id=conversation_id,
+        session_id=session_id,
         storage=StorageAdapters.default(root),
         web_adapters=WebAdapters.default(),
         workspace=WorkspaceAdapters.default(root),
@@ -84,14 +84,14 @@ UptimeDep = Annotated[float, Depends(uptime)]
 # =============================================================================
 
 
-async def get_conversations_data(deps: DepsDep) -> list[dict]:
-    """Fetch all conversations with message counts."""
-    conv_ids = await deps.storage.conversations.list()
-    convs = []
-    for cid in conv_ids:
-        msgs = await deps.storage.conversations.get(cid)
-        convs.append({"id": cid, "message_count": len(msgs)})
-    return convs
+async def get_sessions_data(deps: DepsDep) -> list[dict]:
+    """Fetch all sessions with message counts."""
+    session_ids = await deps.storage.sessions.list()
+    sessions = []
+    for sid in session_ids:
+        msgs = await deps.storage.sessions.get(sid)
+        sessions.append({"id": sid, "message_count": len(msgs)})
+    return sessions
 
 
 async def get_cron_data(deps: DepsDep) -> list[dict]:
@@ -152,7 +152,7 @@ async def get_channels_data(channels: ChannelsDep) -> list[dict]:
 # Dependency type aliases
 # =============================================================================
 
-ConversationsDataDep = Annotated[list[dict], Depends(get_conversations_data)]
+SessionsDataDep = Annotated[list[dict], Depends(get_sessions_data)]
 CronDataDep = Annotated[list[dict], Depends(get_cron_data)]
 MemoryDataDep = Annotated[list[dict], Depends(get_memory_data)]
 ChannelsDataDep = Annotated[list[dict], Depends(get_channels_data)]

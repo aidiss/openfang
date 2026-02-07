@@ -1,14 +1,15 @@
 """Capability implementations for protocols.
 
 Core adapters for file system, web browsing, memory, shell, projects,
-conversations, and scheduling. Channels and skills are now at top-level.
+sessions, and scheduling. Channels and skills are now at top-level.
 """
 
-from .conversations import InMemoryConversations
 from .cron import InMemoryCron
+from .file_sessions import FileSessions
 from .files import LocalFiles
 from .memory import InMemoryMemory
 from .projects import LocalProjects
+from .sessions import InMemorySessions
 from .shell import LocalShell
 from .web import PlaywrightSession, PlaywrightWeb
 
@@ -19,6 +20,7 @@ __all__ = [
     "InMemoryMemory",
     "LocalShell",
     "LocalProjects",
-    "InMemoryConversations",
+    "InMemorySessions",
+    "FileSessions",
     "InMemoryCron",
 ]
