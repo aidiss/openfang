@@ -1,0 +1,42 @@
+/* OpenFang custom styles - Snake themed */
+
+:root {
+  --md-primary-fg-color: #4CAF50;        /* Green */
+  --md-primary-fg-color--light: #81C784; /* Light green */
+  --md-primary-fg-color--dark: #2E7D32;  /* Dark green */
+  --md-accent-fg-color: #8BC34A;         /* Lime green */
+}
+
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #0d1117;
+  --md-default-fg-color: #e6edf3;
+  --md-code-bg-color: #161b22;
+}
+
+/* Hide first h1 since we have logo image */
+.md-content__inner > h1:first-child {
+  display: none;
+}
+
+/* Code blocks */
+.highlight code {
+  font-size: 0.85rem;
+}
+
+/* Admonitions */
+.admonition.tip {
+  border-color: var(--md-accent-fg-color);
+}
+
+/* Links */
+.md-content a:not(.md-button) {
+  text-decoration: underline;
+  text-decoration-color: var(--md-accent-fg-color);
+  text-underline-offset: 2px;
+}
+
+/* Navigation */
+.md-nav__link--active {
+  font-weight: 600;
+}
