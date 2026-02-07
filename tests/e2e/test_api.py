@@ -163,6 +163,42 @@ class TestSessionsEndpoints:
         response = await client.post("/sessions/new-session/switch")
         assert response.status_code == 200
 
+    async def test_session_messages(self, client: AsyncClient):
+        """Can get messages for a session."""
+        # Create a session first
+        response = await client.post(
+            "/sessions",
+            data={"id": "msg-test-session"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        assert response.status_code == 200
+
+        # Get messages for the session (should be empty initially)
+        response = await client.get("/sessions/msg-test-session/messages")
+        assert response.status_code == 200
+        data = response.json()
+        assert "session_id" in data
+        assert data["session_id"] == "msg-test-session"
+        assert "messages" in data
+        assert data["messages"] == []
+
+    async def test_session_switch_sets_cookie(self, client: AsyncClient):
+        """Session switch sets session_id cookie."""
+        # Create a session
+        response = await client.post(
+            "/sessions",
+            data={"id": "cookie-test"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        assert response.status_code == 200
+
+        # Switch to it - should set cookie
+        response = await client.post("/sessions/cookie-test/switch")
+        assert response.status_code == 200
+        # Check cookie was set
+        assert "session_id" in response.cookies
+        assert response.cookies["session_id"] == "cookie-test"
+
 
 class TestSkillsEndpoint:
     """Test skills listing endpoint."""

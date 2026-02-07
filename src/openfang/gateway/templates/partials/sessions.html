@@ -9,9 +9,10 @@
     {% for session in sessions %}
     <li class="text-xs p-2 rounded group flex justify-between items-center
                {% if session.id == current_id %}bg-blue-100 border border-blue-300{% else %}bg-gray-50 hover:bg-gray-100{% endif %}">
-        <button hx-post="/sessions/{{ session.id }}/switch"
-                hx-target="#sessions-panel"
+        <button hx-get="/sessions/{{ session.id }}/messages"
+                hx-target="#messages"
                 hx-swap="innerHTML"
+                hx-on::after-request="switchToSession('{{ session.id }}')"
                 class="flex-1 text-left truncate">
             <span class="{% if session.id == current_id %}font-medium text-blue-700{% else %}text-gray-700{% endif %}">{{ session.id }}</span>
             <span class="text-gray-400 ml-1">({{ session.message_count }})</span>

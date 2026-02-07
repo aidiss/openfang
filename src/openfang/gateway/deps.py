@@ -27,13 +27,16 @@ templates = Jinja2Templates(env=_env)
 # =============================================================================
 
 
-def _create_deps(session_id: str = "web-session") -> Deps:
+def _create_deps(session_id: str | None = None) -> Deps:
     """Create deps for an HTTP request.
 
     Each request gets fresh deps with the specified session.
     """
     from ..deps import CommsAdapters, Deps, SchedulingAdapters, StorageAdapters, WebAdapters, WorkspaceAdapters
-    from ..models import User
+    from ..models import User, session_id_default
+
+    if session_id is None:
+        session_id = session_id_default()
 
     user = User(id=0, email="web@system", roles={"admin"})
     root = Path.cwd()
@@ -53,8 +56,10 @@ def get_deps(request: Request) -> Deps:
     """Create deps for this request.
 
     Note: Creates fresh deps per-request. For testing, override this dependency.
+    Session ID is read from the 'session_id' cookie if present.
     """
-    return _create_deps()
+    session_id = request.cookies.get("session_id")
+    return _create_deps(session_id=session_id)
 
 
 def get_state(request: Request) -> Any:

@@ -1,0 +1,10 @@
+{% for msg in messages %}
+{% set role = msg.role %}
+{% set content = msg.content %}
+{% include "partials/message.html" %}
+{% endfor %}
+{% if not messages %}
+<div class="text-center text-gray-400 dark:text-gray-500 py-8">
+    No messages in this session
+</div>
+{% endif %}

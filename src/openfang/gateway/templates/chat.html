@@ -303,18 +303,32 @@
 </div>
 
 <script>
+// Store Alpine app reference for external access
+let alpineApp = null;
+
 function app() {
     return {
         view: 'chat',
+        sessionId: null,
         message: '',
         sending: false,
         get darkMode() {
             return document.documentElement.classList.contains('dark');
         },
         init() {
+            alpineApp = this;
+            // Restore state from URL on load
+            this.restoreFromUrl();
+
             this.$nextTick(() => {
                 if (this.$refs.input) this.$refs.input.focus();
             });
+
+            // Handle browser back/forward
+            window.addEventListener('popstate', () => {
+                this.restoreFromUrl();
+            });
+
             // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
                 if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -326,7 +340,57 @@ function app() {
                     htmx.ajax('POST', '/sessions', {target: '#sessions-panel'});
                 }
             });
+
+            // Watch view changes to update URL
+            this.$watch('view', (newView) => {
+                this.updateUrl();
+            });
+        },
+        restoreFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view');
+            const session = params.get('session');
+
+            if (view && ['chat', 'sessions', 'channels', 'cron', 'memory', 'skills', 'overview'].includes(view)) {
+                this.view = view;
+            }
+            if (session) {
+                this.sessionId = session;
+                // Load session messages if we have a session param
+                if (this.view === 'chat') {
+                    htmx.ajax('GET', `/sessions/${session}/messages`, {target: '#messages', swap: 'innerHTML'});
+                    // Also switch the session via POST to set cookie
+                    htmx.ajax('POST', `/sessions/${session}/switch`, {target: '#sessions-panel'});
+                }
+            }
+        },
+        updateUrl() {
+            const params = new URLSearchParams();
+            if (this.view !== 'chat') {
+                params.set('view', this.view);
+            }
+            if (this.sessionId && this.view === 'chat') {
+                params.set('session', this.sessionId);
+            }
+            const url = params.toString() ? `?${params.toString()}` : window.location.pathname;
+            history.pushState({view: this.view, sessionId: this.sessionId}, '', url);
+        },
+        setSession(sessionId) {
+            this.sessionId = sessionId;
+            this.view = 'chat';
+            this.updateUrl();
+            // Trigger session change event for chat header
+            htmx.trigger(document.body, 'sessionChanged');
         }
+    }
+}
+
+// Called from session list when clicking a session
+function switchToSession(sessionId) {
+    if (alpineApp) {
+        alpineApp.setSession(sessionId);
+        // Also switch the session via POST to set cookie
+        htmx.ajax('POST', `/sessions/${sessionId}/switch`, {target: '#sessions-panel'});
     }
 }
 
@@ -337,7 +401,11 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
     }
     // Only clear messages when creating a NEW session (POST), not on refresh (GET)
     if (evt.detail.target.id === 'sessions-panel' && evt.detail.requestConfig?.verb === 'post') {
-        document.getElementById('messages').innerHTML = '';
+        // Don't clear if this was a session switch (we want to keep loaded messages)
+        const isSwitch = evt.detail.requestConfig?.path?.includes('/switch');
+        if (!isSwitch) {
+            document.getElementById('messages').innerHTML = '';
+        }
         htmx.trigger(document.body, 'sessionChanged');
     }
 });
