@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.started_at = datetime.now()
     app.state.last_heartbeat_at = None
     app.state.last_heartbeat_alert = None
-    app.state.events_queue = asyncio.Queue()
+    app.state.events_queue = asyncio.Queue(maxsize=1000)
     app.state.subscribers = 0
 
     # Infrastructure

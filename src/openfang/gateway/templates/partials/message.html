@@ -3,6 +3,6 @@
         <div class="text-xs {% if role == 'user' %}text-blue-200{% else %}text-gray-500{% endif %} mb-1">
             {{ role | capitalize }}
         </div>
-        <div class="message-content whitespace-pre-wrap">{{ content }}</div>
+        <div class="message-content whitespace-pre-wrap">{{ content | e }}</div>
     </div>
 </div>

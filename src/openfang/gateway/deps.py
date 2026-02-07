@@ -8,13 +8,18 @@ from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import Depends, Request
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 if TYPE_CHECKING:
     from ..deps import Deps
 
-# Templates directory
+# Templates directory (autoescape enabled for XSS protection)
 TEMPLATES_DIR = Path(__file__).parent / "templates"
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+_env = Environment(
+    loader=FileSystemLoader(str(TEMPLATES_DIR)),
+    autoescape=select_autoescape(["html", "xml"]),
+)
+templates = Jinja2Templates(env=_env)
 
 
 # =============================================================================

@@ -210,7 +210,7 @@
                      hx-ext="sse"
                      sse-connect="/events"
                      sse-swap="chat"
-                     hx-swap="beforeend scroll:bottom"
+                     hx-swap="beforeend"
                      class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-900">
                 </div>
 
@@ -335,7 +335,8 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
     if (evt.detail.target.id === 'messages') {
         evt.detail.target.scrollTop = evt.detail.target.scrollHeight;
     }
-    if (evt.detail.target.id === 'convos-panel') {
+    // Only clear messages when creating a NEW conversation (POST), not on refresh (GET)
+    if (evt.detail.target.id === 'convos-panel' && evt.detail.requestConfig?.verb === 'post') {
         document.getElementById('messages').innerHTML = '';
         htmx.trigger(document.body, 'convChanged');
     }
